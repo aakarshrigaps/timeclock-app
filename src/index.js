@@ -68,10 +68,10 @@ if (!gotTheLock) {
                mainWindow.close();
             }
             // console.log("Received user details from renderer:", userDetails); // Debug log
+            await authenticateEmail();
             store.set("user-config", userDetails);
             userConfig = userDetails;
 
-            await authenticateEmail();
             startMainLoop();
          });
       } else {
@@ -99,8 +99,8 @@ if (!gotTheLock) {
          const mailOptions = {
             from: "appautotimeclock@gmail.com",
             to: userConfig.email,
-            subject: "Your OTP Code",
-            text: `Your OTP code is ${otp}`,
+            subject: "AutoTimeClock: Verification Code",
+            text: `Your OTP for verification is: ${otp}`,
          };
 
          transporter.sendMail(mailOptions, (error, info) => {
