@@ -33,3 +33,4 @@ encrypt-secrets.js
 # Report Generation
 timecard-report-good.html
 report-generator.js
+out/
