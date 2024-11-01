@@ -14,7 +14,6 @@ const {
    getPresence,
 } = require("./scripts/timecard-api");
 const { calculateBreakDuration, isTeamsRunning } = require("./scripts/utils");
-const { generateTimeCardReport } = require("./scripts/report-generator");
 const { autoUpdater } = require("electron-updater");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
