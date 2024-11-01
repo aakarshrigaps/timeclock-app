@@ -29,7 +29,7 @@ let store; // Declare store variable
 // Check for single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
 
-app.on("window-all-closed", (event) => { 
+app.on("window-all-closed", (event) => {
    event.preventDefault(); // Prevent the default behavior of quitting the app
 });
 
@@ -56,8 +56,16 @@ if (!gotTheLock) {
 
       // Check if user details are already stored
       let userConfig = store.get("user-config");
+      let userIds = store.get("user-ids");
 
-      if (!userConfig || !userConfig.email || !userConfig.teamName) {
+      if (
+         !userConfig ||
+         !userConfig.email ||
+         !userConfig.teamName ||
+         !userIds ||
+         !userIds.userId ||
+         !userIds.teamId
+      ) {
          // If no configuration is found, prompt the user for details
          mainWindow = createWindow(450, 250); // Default size for email-input.html
          mainWindow.loadFile("./src/pages/user-config.html");
@@ -68,10 +76,12 @@ if (!gotTheLock) {
                mainWindow.close();
             }
             // console.log("Received user details from renderer:", userDetails); // Debug log
-            await authenticateEmail();
             store.set("user-config", userDetails);
             userConfig = userDetails;
-
+            await authenticateEmail();
+            let userId = await getUserId(userConfig.email);
+            teamId = await getTeamId(userId, userConfig.teamName);
+            store.set("user-ids", { userId, teamId });
             startMainLoop();
          });
       } else {
@@ -139,12 +149,12 @@ if (!gotTheLock) {
       let { userId, teamId } = store.get("user-ids") || {};
       let { owners } = store.get("owners") || {};
 
-      if (!userId || !teamId) {
-         // console.log("Fetching user and team IDs...");
-         userId = await getUserId(email);
-         teamId = await getTeamId(userId, teamName);
-         store.set("user-ids", { userId, teamId });
-      }
+      // if (!userId || !teamId) {
+      //    // console.log("Fetching user and team IDs...");
+      //    userId = await getUserId(email);
+      //    teamId = await getTeamId(userId, teamName);
+      //    store.set("user-ids", { userId, teamId });
+      // }
 
       if (!owners) {
          // console.log("Fetching team owners...");
@@ -186,7 +196,7 @@ if (!gotTheLock) {
                            // Check reminder flag again
                            isReminderOpen = true;
                            isReminderLoopActive = true;
-                           if(mainWindow) mainWindow.close();
+                           if (mainWindow) mainWindow.close();
                            reminderWindow = createWindow(450, 250);
                            reminderWindow.loadFile(
                               "./src/pages/clock-in-reminder.html"
@@ -201,7 +211,7 @@ if (!gotTheLock) {
                            );
                         }
                      }
-                     if(mainWindow) mainWindow.close();
+                     if (mainWindow) mainWindow.close();
                      isPromptOpen = false;
                   }
                );
@@ -260,7 +270,7 @@ if (!gotTheLock) {
                      if (shouldClockOut) {
                         await clockOutSequence();
                      }
-                     if(mainWindow) mainWindow.close();
+                     if (mainWindow) mainWindow.close();
                      isPromptOpen = false;
                   }
                );
@@ -272,7 +282,7 @@ if (!gotTheLock) {
 
    async function startReminderLoop(reminderTime) {
       let scheduleClockInPrompt = async () => {
-         if(reminderWindow) reminderWindow.close();
+         if (reminderWindow) reminderWindow.close();
          isReminderLoopActive = true; // Set the flag to indicate the reminder loop is active
          await new Promise((resolve) =>
             setTimeout(resolve, reminderTime * 60000)
@@ -287,11 +297,11 @@ if (!gotTheLock) {
                   if (shouldClockIn) {
                      let timeCard = await clockInSequence();
                      store.set("latest-time-card", timeCard);
-                     if(mainWindow) mainWindow.close();
+                     if (mainWindow) mainWindow.close();
                      isReminderLoopActive = false;
                   } else {
                      // User chose not to clock in, reschedule the reminder loop
-                     if(mainWindow) mainWindow.close();
+                     if (mainWindow) mainWindow.close();
                      reminderWindow = createWindow(450, 250);
                      reminderWindow.loadFile(
                         "./src/pages/clock-in-reminder.html"
