@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>AutoTimeclock App</title>
+      <link rel="stylesheet" href="../styles/otp-page.css" />
+   </head>
+   <body>
+      <div class="otp-container">
+         <h2>Verify OTP</h2>
+         <form id="otp-form">
+            <input
+               type="text"
+               class="otp-input"
+               id="otp"
+               name="otp"
+               placeholder="Enter OTP"
+               required
+            />
+            <p id="otp-error" style="color: red; margin-top: 10px"></p>
+            <button type="submit" class="submit-btn">Verify</button>
+         </form>
+      </div>
+      <script src="../scripts/otp-handler.js"></script>
+   </body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>AutoTimeclock App</title>
+      <link rel="stylesheet" href="../styles/confirmation-dialog.css" />
+   </head>
+   <body>
+      <div class="confirmation-box">
+         <h2>Clock Out Confirmation</h2>
+         <p id="confirmation-text">
+            It's <span id="current-time"></span> right now. Do you want to Clock Out?
+         </p>
+         <button class="yes-button" onclick="confirmClockOut(true)">Yes</button>
+         <button class="no-button" onclick="confirmClockOut(false)">No</button>
+      </div>
+
+      <script src="../scripts/confirmation-handler.js"></script>
+   </body>
+</html>

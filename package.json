@@ -1,0 +1,51 @@
+{
+   "name": "timeclock-app",
+   "version": "2.0.0",
+   "description": "AutoTimeClock App",
+   "main": "src/index.js",
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "electron-forge start",
+      "pack": "electron-builder --dir",
+      "dist": "electron-builder",
+      "package": "electron-forge package",
+      "make": "electron-forge make",
+      "publish": "electron-forge publish"
+   },
+   "build": {
+      "productName": "AutoTimeClock",
+      "win": {
+         "target": "nsis",
+         "icon": "assets/images/logo.ico"
+      },
+      "files": [
+         "src/**/*"
+      ],
+      "directories": {
+         "buildResources": "build"
+      },
+      "publish": [
+         {
+            "provider": "github",
+            "owner": "aakarshrigaps",
+            "repo": "timeclock-app"
+         }
+      ]
+   },
+   "author": "aakarsh@rigaps.com",
+   "license": "ISC",
+   "dependencies": {
+      "@azure/msal-node": "^2.15.0",
+      "axios": "^1.7.7",
+      "crypto": "^1.0.1",
+      "dotenv": "^16.4.5",
+      "electron-store": "^10.0.0",
+      "electron-updater": "^6.3.9",
+      "nodemailer": "^6.9.15",
+      "path": "^0.12.7"
+   },
+   "devDependencies": {
+      "electron": "^32.2.0",
+      "electron-builder": "^25.1.7"
+   }
+}

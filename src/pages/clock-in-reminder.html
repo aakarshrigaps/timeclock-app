@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>AutoTimeclock App</title>
+      <link rel="stylesheet" href="../styles/set-reminder.css" />
+   </head>
+   <body>
+      <div class="container">
+         <h2>Set Reminder</h2>
+         <div class="form-control">
+            <label for="reminder-time">Remind to clock in after:</label>
+            <input
+               list="default-times"
+               id="reminder-time"
+               placeholder="Enter time"
+               maxlength="2"
+               oninput="validateInput()"
+            />
+            <datalist id="default-times">
+               <option value="10"></option>
+               <option value="15"></option>
+               <option value="30"></option>
+            </datalist>
+
+            <label for="reminder-time">minutes</label>
+         </div>
+         <button id="ok-button" disabled onclick="setReminder()">OK</button>
+      </div>
+
+      <script src="../scripts/reminder-handler.js"></script>
+   </body>
+</html>
