@@ -1,0 +1,72 @@
+name: Build and Release AutoTimeClock
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  release:
+    types: [created, published]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest  # Run on macOS for macOS-specific builds
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and Publish Electron App
+        run: npm run publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  build-windows:
+    runs-on: windows-latest  # Run on Windows for Windows-specific builds
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and Publish Electron App
+        run: npm run publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  build-linux:
+    runs-on: ubuntu-latest  # Run on Ubuntu for Linux-specific builds
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and Publish Electron App
+        run: npm run publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
