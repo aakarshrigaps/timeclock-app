@@ -6,6 +6,7 @@ function confirmClockIn(isConfirmed) {
    } else {
       ipcRenderer.send("clock-in-confirmation", false);
    }
+   showLoadingSpinner();
 }
 
 function confirmClockOut(isConfirmed){
@@ -14,7 +15,14 @@ function confirmClockOut(isConfirmed){
    } else {
       ipcRenderer.send("clock-out-confirmation", false);
    }
+   showLoadingSpinner();
 }
+
+function showLoadingSpinner() {
+   const loadingSpinner = document.getElementById("loading-spinner");
+   loadingSpinner.style.display = "flex"; // Make the loading spinner visible
+}
+
 
 function updateCurrentTime() {
    const currentTimeElement = document.getElementById("current-time");

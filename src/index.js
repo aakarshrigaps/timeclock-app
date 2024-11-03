@@ -14,7 +14,6 @@ const {
    getPresence,
 } = require("./scripts/timecard-api");
 const { calculateBreakDuration, isTeamsRunning } = require("./scripts/utils");
-const { autoUpdater } = require("electron-updater");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const path = require("path");
@@ -47,8 +46,8 @@ if (!gotTheLock) {
    });
 
    app.on("ready", async () => {
-      // Check for updates when the app is ready
-      autoUpdater.checkForUpdatesAndNotify();
+      // Check for updates using update-electron-app
+      require('update-electron-app')();
 
       // Dynamically import electron-store (ESM)
       const Store = (await import("electron-store")).default;
@@ -367,20 +366,6 @@ if (!gotTheLock) {
          [email]
       );
    }
-
-   // Auto-Updater Event Listeners
-   autoUpdater.on("update-available", () => {
-      // console.log("Update available. Downloading...");
-   });
-
-   autoUpdater.on("update-downloaded", () => {
-      // console.log("Update downloaded. Will install now.");
-      autoUpdater.quitAndInstall(); // Automatically quit and install the update
-   });
-
-   autoUpdater.on("error", (error) => {
-      console.error("Error during update:", error);
-   });
 
    // Function to create a BrowserWindow with specific width and height
    function createWindow(width, height) {
