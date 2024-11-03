@@ -1,63 +1,67 @@
 {
-  "name": "timeclock-app",
-  "version": "2.2.0",
-  "description": "AutoTimeClock App",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron-forge start",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish"
-  },
-  "build": {
-    "productName": "AutoTimeClock",
-    "win": {
-      "target": "nsis",
-      "icon": "assets/images/logo.ico"
-    },
-    "files": [
-      "src/**/*"
-    ],
-    "directories": {
-      "buildResources": "build"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "aakarshrigaps",
-        "repo": "timeclock-app"
-      }
-    ]
-  },
-  "author": "aakarsh@rigaps.com",
-  "license": "ISC",
-  "dependencies": {
-    "@azure/msal-node": "^2.15.0",
-    "axios": "^1.7.7",
-    "crypto": "^1.0.1",
-    "dotenv": "^16.4.5",
-    "electron-squirrel-startup": "^1.0.1",
-    "electron-store": "^10.0.0",
-    "nodemailer": "^6.9.15",
-    "path": "^0.12.7",
-    "update-electron-app": "^3.0.0"
-  },
-  "devDependencies": {
-    "@electron-forge/cli": "^7.5.0",
-    "@electron-forge/maker-deb": "^7.5.0",
-    "@electron-forge/maker-dmg": "^7.5.0",
-    "@electron-forge/maker-rpm": "^7.5.0",
-    "@electron-forge/maker-squirrel": "^7.5.0",
-    "@electron-forge/maker-wix": "^7.5.0",
-    "@electron-forge/maker-zip": "^7.5.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.5.0",
-    "@electron-forge/plugin-fuses": "^7.5.0",
-    "@electron-forge/publisher-github": "^7.5.0",
-    "@electron/fuses": "^1.8.0",
-    "electron": "^32.2.0",
-    "electron-builder": "^25.1.8"
-  }
+   "name": "timeclock-app",
+   "version": "2.2.0",
+   "description": "AutoTimeClock App",
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/aakarshrigaps/timeclock-app.git"
+   },
+   "main": "src/index.js",
+   "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "electron-forge start",
+      "pack": "electron-builder --dir",
+      "dist": "electron-builder",
+      "package": "electron-forge package",
+      "make": "electron-forge make",
+      "publish": "electron-forge publish"
+   },
+   "build": {
+      "productName": "AutoTimeClock",
+      "win": {
+         "target": "nsis",
+         "icon": "assets/images/logo.ico"
+      },
+      "files": [
+         "src/**/*"
+      ],
+      "directories": {
+         "buildResources": "build"
+      },
+      "publish": [
+         {
+            "provider": "github",
+            "owner": "aakarshrigaps",
+            "repo": "timeclock-app"
+         }
+      ]
+   },
+   "author": "aakarsh@rigaps.com",
+   "license": "ISC",
+   "dependencies": {
+      "@azure/msal-node": "^2.15.0",
+      "axios": "^1.7.7",
+      "crypto": "^1.0.1",
+      "dotenv": "^16.4.5",
+      "electron-squirrel-startup": "^1.0.1",
+      "electron-store": "^10.0.0",
+      "nodemailer": "^6.9.15",
+      "path": "^0.12.7",
+      "update-electron-app": "^3.0.0"
+   },
+   "devDependencies": {
+      "@electron-forge/cli": "^7.5.0",
+      "@electron-forge/maker-deb": "^7.5.0",
+      "@electron-forge/maker-dmg": "^7.5.0",
+      "@electron-forge/maker-rpm": "^7.5.0",
+      "@electron-forge/maker-squirrel": "^7.5.0",
+      "@electron-forge/maker-wix": "^7.5.0",
+      "@electron-forge/maker-zip": "^7.5.0",
+      "@electron-forge/plugin-auto-unpack-natives": "^7.5.0",
+      "@electron-forge/plugin-fuses": "^7.5.0",
+      "@electron-forge/publisher-github": "^7.5.0",
+      "@electron/fuses": "^1.8.0",
+      "electron": "^32.2.0",
+      "electron-builder": "^25.1.8"
+   }
 }

@@ -17,6 +17,7 @@ const { calculateBreakDuration, isTeamsRunning } = require("./scripts/utils");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const path = require("path");
+const { updateElectronApp } = require("update-electron-app");
 
 let isPromptOpen = false;
 let isReminderOpen = false;
@@ -47,7 +48,7 @@ if (!gotTheLock) {
 
    app.on("ready", async () => {
       // Check for updates using update-electron-app
-      require('update-electron-app')();
+      updateElectronApp();
 
       // Dynamically import electron-store (ESM)
       const Store = (await import("electron-store")).default;
