@@ -16,6 +16,12 @@ function calculateBreakDuration(breakStartTime, breakEndTime) {
    return durationString.trim();
 }
 
+function calculateBreakMins(breakStartTime, breakEndTime) {
+   const breakDurationMs = new Date(breakEndTime) - new Date(breakStartTime);
+   const breakDurationMins = Math.floor(breakDurationMs / 60000);
+   return breakDurationMins;
+}
+
 async function isTeamsRunning() {
    return new Promise((resolve, reject) => {
       const platform = os.platform();
@@ -47,4 +53,4 @@ async function isTeamsRunning() {
    });
 }
 
-module.exports = { calculateBreakDuration, isTeamsRunning };
+module.exports = { calculateBreakDuration, calculateBreakMins, isTeamsRunning };

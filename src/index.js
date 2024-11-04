@@ -13,7 +13,7 @@ const {
    endBreak,
    getPresence,
 } = require("./scripts/timecard-api");
-const { calculateBreakDuration, isTeamsRunning } = require("./scripts/utils");
+const { calculateBreakDuration, calculateBreakMins, isTeamsRunning } = require("./scripts/utils");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const path = require("path");
@@ -226,13 +226,14 @@ if (!gotTheLock) {
             let clockInData = store.get("latest-time-card");
             await startBreak(userId, teamId, timeCardId);
             const localBreakStartTime = new Date().toLocaleString();
-            await notifyUserAndTeam(
-               userId,
-               "Break Update",
-               `User ${email} has started a break at ${localBreakStartTime} in team ${teamName}`,
-               owners,
-               [email]
-            );
+            // commenting out break start notification mail
+            // await notifyUserAndTeam(
+            //    userId,
+            //    "Break Update",
+            //    `User ${email} has started a break at ${localBreakStartTime} in team ${teamName}`,
+            //    owners,
+            //    [email]
+            // );
          } else if (
             userStatus.availability !== "Away" &&
             userStatus.availability !== "BeRightBack" &&
@@ -250,13 +251,16 @@ if (!gotTheLock) {
                breakStartTime,
                breakEndTime
             );
-            await notifyUserAndTeam(
-               userId,
-               "Break Update",
-               `User ${email} has ended a break at ${localBreakEndTime} in team ${teamName}. Break Duration: ${breakDuration}`,
-               owners,
-               [email]
-            );
+            const breakDurationMins = calculateBreakMins(breakStartTime, breakEndTime);
+            if (breakDurationMins > 5) {
+               await notifyUserAndTeam(
+                  userId,
+                  "Break Update",
+                  `User ${email} has ended a break at ${localBreakEndTime} in team ${teamName}. Break Duration: ${breakDuration}`,
+                  owners,
+                  [email]
+               );
+            }
          }
       } else {
          if (state === "clockedIn") {
@@ -329,7 +333,7 @@ if (!gotTheLock) {
          // console.log("Clocking In");
          let { email, teamName } = store.get("user-config");
          let { userId, teamId } = store.get("user-ids");
-         let owners = store.get("owners");
+         let { owners } = store.get("owners");
          let timeCard = await clockIn(userId, teamId);
          let timeCardId = timeCard.id;
          let clockedInTime = timeCard.clockInEvent.dateTime;
@@ -353,7 +357,7 @@ if (!gotTheLock) {
       let { email, teamName } = store.get("user-config");
       let { userId, teamId } = store.get("user-ids");
       let { latestTimeCard } = store.get("latest-time-card");
-      let owners = store.get("owners");
+      let { owners } = store.get("owners");
       await clockOut(userId, teamId, latestTimeCard.id);
       let clockedOutTime = new Date().toLocaleString();
       const localClockedInTime = new Date(
