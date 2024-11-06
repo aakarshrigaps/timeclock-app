@@ -1,5 +1,6 @@
 const axios = require("axios");
 const getAccessToken = require("./ms-auth").getAccessToken;
+const log = require('electron-log');
 
 async function getUserId(email) {
    const accessToken = await getAccessToken();
@@ -16,7 +17,7 @@ async function getUserId(email) {
 
       return response.data.id;
    } catch (error) {
-      console.error(
+      log.error(
          "Error fetching user ID:",
          error.response ? error.response.data : error.message
       );
@@ -41,7 +42,7 @@ async function getTeamId(userId, teamName) {
       const team = teams.find((team) => team.displayName === teamName);
       return team ? team.id : null;
    } catch (error) {
-      console.error(
+      log.error(
          "Error fetching team ID:",
          error.response ? error.response.data : error.message
       );
@@ -69,7 +70,7 @@ async function getOwners(teamId) {
          return [];
       }
    } catch (error) {
-      console.error(
+      log.error(
          "Error fetching owners:",
          error.response ? error.response.data : error.message
       );
@@ -82,11 +83,11 @@ async function notifyUserAndTeam(userId, subject, message, to = [], cc = []) {
 
    // Ensure 'to' and 'cc' are arrays
    if (!Array.isArray(to)) {
-      console.error("Expected 'to' to be an array.");
+      log.info("Expected 'to' to be an array.");
       to = [];
    }
    if (!Array.isArray(cc)) {
-      console.error("Expected 'cc' to be an array.");
+      log.info("Expected 'cc' to be an array.");
       cc = [];
    }
 
@@ -123,7 +124,7 @@ async function notifyUserAndTeam(userId, subject, message, to = [], cc = []) {
       );
       // console.log("Email sent successfully.");
    } catch (error) {
-      console.error("Error sending email:", error.response.data);
+      log.error("Error sending email:", error.response.data);
       throw error; // Optionally re-throw the error if you want to handle it further up the call stack
    }
 }
@@ -133,11 +134,11 @@ async function sendHtmlReport(userId, subject, htmlMessage, to = [], cc = []) {
 
    // Ensure
    if (!Array.isArray(to)) {
-      console.error("Expected 'to' to be an array.");
+      log.info("Expected 'to' to be an array.");
       to = [];
    }
    if (!Array.isArray(cc)) {
-      console.error("Expected 'cc' to be an array.");
+      log.info("Expected 'cc' to be an array.");
       cc = [];
    }
 
@@ -174,7 +175,7 @@ async function sendHtmlReport(userId, subject, htmlMessage, to = [], cc = []) {
       );
       // console.log("Email sent successfully.");
    } catch (error) {
-      console.error("Error sending email:", error.response.data);
+      log.error("Error sending email:", error.response.data);
       throw error; // Optionally re-throw the error if you want to handle it further up the call stack
    }
 }

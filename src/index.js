@@ -1,4 +1,9 @@
 const { app, BrowserWindow, ipcMain, contextBridge } = require("electron");
+const { updateElectronApp } = require("update-electron-app");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const path = require("path");
+const log = require('electron-log');
 const {
    getUserId,
    getTeamId,
@@ -14,10 +19,6 @@ const {
    getPresence,
 } = require("./scripts/timecard-api");
 const { calculateBreakDuration, calculateBreakMins, isTeamsRunning } = require("./scripts/utils");
-const nodemailer = require("nodemailer");
-const crypto = require("crypto");
-const path = require("path");
-const { updateElectronApp } = require("update-electron-app");
 
 let isPromptOpen = false;
 let isReminderOpen = false;
@@ -133,7 +134,7 @@ if (!gotTheLock) {
                if (mainWindow) mainWindow.close();
                resolve(); // Resolve the promise when OTP is verified and window is closed
             } else {
-               console.error("Invalid OTP entered.");
+               log.error("Invalid OTP entered.");
                mainWindow.webContents.send(
                   "otp-error",
                   "Invalid OTP. Please try again."
@@ -348,7 +349,7 @@ if (!gotTheLock) {
          );
          return timeCard;
       } catch (error) {
-         console.error("Error while clocking in", error);
+         log.error("Error while clocking in", error);
       }
    }
 

@@ -1,6 +1,7 @@
 require("dotenv").config();
 const msal = require("@azure/msal-node");
 const { client_id, tenant_id, client_secret } = require("./decrypt-secrets");
+const log = require('electron-log');
 
 let accessToken = null;
 let tokenExpiresAt = null;
@@ -33,7 +34,7 @@ async function getAccessToken() {
       // console.log("New token acquired, returning new token");
       return accessToken;
    } catch (error) {
-      console.error("Error acquiring token:", error);
+      log.error("Error acquiring token:", error);
       throw new Error("Failed to acquire access token");
    }
 }

@@ -1,5 +1,6 @@
 const axios = require("axios");
 const getAccessToken = require("./ms-auth").getAccessToken;
+const log = require('electron-log');
 
 async function getLatestSession(userId, teamId) {
    const accessToken = await getAccessToken();
@@ -20,7 +21,7 @@ async function getLatestSession(userId, teamId) {
          .find((timeCard) => timeCard.userId === userId);
       return latestSession;
    } catch (error) {
-      console.error("Error fetching the latest session:", error);
+      log.error("Error fetching the latest session:", error);
       throw error;
    }
 }
@@ -40,7 +41,7 @@ async function clockIn(userId, teamId) {
       );
       return response.data;
    } catch (error) {
-      console.error("Error clocking in:", error);
+      log.error("Error clocking in:", error);
       throw error;
    }
 }
@@ -59,7 +60,7 @@ async function clockOut(userId, teamId, timeCardId) {
          }
       );
    } catch (error) {
-      console.error("Error clocking out:", error);
+      log.error("Error clocking out:", error);
       throw error;
    }
 }
@@ -79,7 +80,7 @@ async function startBreak(userId, teamId, timeCardId) {
       );
       return response.data;
    } catch (error) {
-      console.error("Error starting break:", error);
+      log.error("Error starting break:", error);
       throw error;
    }
 }
@@ -99,7 +100,7 @@ async function endBreak(userId, teamId, timeCardId) {
       );
       return response.data;
    } catch (error) {
-      console.error("Error ending break:", error);
+      log.error("Error ending break:", error);
       throw error;
    }
 }
@@ -117,7 +118,7 @@ async function getPresence(userId) {
       );
       return response.data;
    } catch (error) {
-      console.error("Error fetching presence:", error);
+      log.error("Error fetching presence:", error);
       throw error;
    }
 }
