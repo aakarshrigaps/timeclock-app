@@ -39,9 +39,9 @@ if (!gotTheLock) {
    app.quit();
 } else {
    // If the lock is acquired, set up the event listener for second instances
-   app.on("second-instance", (event, commandLine, workingDirectory) => {
+   app.on("second-instance", () => {
       // When another instance tries to run, this event will be triggered
-      if (mainWindow) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
          if (mainWindow.isMinimized()) mainWindow.restore();
          mainWindow.focus();
       }
