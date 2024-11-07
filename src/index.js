@@ -226,8 +226,8 @@ if (!gotTheLock) {
          ) {
             let clockInData = store.get("latest-time-card");
             await startBreak(userId, teamId, timeCardId);
-            const localBreakStartTime = new Date().toLocaleString();
             // commenting out break start notification mail
+            // const localBreakStartTime = new Date().toLocaleString();
             // await notifyUserAndTeam(
             //    userId,
             //    "Break Update",
@@ -242,26 +242,27 @@ if (!gotTheLock) {
          ) {
             let clockInData = store.get("latest-time-card");
             await endBreak(userId, teamId, timeCardId);
-            const breakEndTime = new Date().toISOString();
-            const localBreakEndTime = new Date().toLocaleString();
-            const breakStartTime =
-               clockInData.latestTimeCard.breaks[
-                  clockInData.latestTimeCard.breaks.length - 1
-               ].start.dateTime;
-            const breakDuration = calculateBreakDuration(
-               breakStartTime,
-               breakEndTime
-            );
-            const breakDurationMins = calculateBreakMins(breakStartTime, breakEndTime);
-            if (breakDurationMins > 5) {
-               await notifyUserAndTeam(
-                  userId,
-                  "Break Update",
-                  `User ${email} has ended a break at ${localBreakEndTime} in team ${teamName}. Break Duration: ${breakDuration}`,
-                  owners,
-                  [email]
-               );
-            }
+            // commenting out break end notification mail
+            // const breakEndTime = new Date().toISOString();
+            // const localBreakEndTime = new Date().toLocaleString();
+            // const breakStartTime =
+            //    clockInData.latestTimeCard.breaks[
+            //       clockInData.latestTimeCard.breaks.length - 1
+            //    ].start.dateTime;
+            // const breakDuration = calculateBreakDuration(
+            //    breakStartTime,
+            //    breakEndTime
+            // );
+            // const breakDurationMins = calculateBreakMins(breakStartTime, breakEndTime);
+            // if (breakDurationMins > 5) {
+            //    await notifyUserAndTeam(
+            //       userId,
+            //       "Break Update",
+            //       `User ${email} has ended a break at ${localBreakEndTime} in team ${teamName}. Break Duration: ${breakDuration}`,
+            //       owners,
+            //       [email]
+            //    );
+            // }
          }
       } else {
          if (state === "clockedIn") {
