@@ -1,12 +1,12 @@
 const axios = require("axios");
 const getAccessToken = require("./ms-auth").getAccessToken;
-const log = require('electron-log');
+const log = require("electron-log");
 
 async function getLatestSession(userId, teamId) {
    const accessToken = await getAccessToken();
    try {
       const response = await axios.get(
-         `https://graph.microsoft.com/beta/teams/${teamId}/schedule/timeCards`,
+         `https://graph.microsoft.com/beta/teams/${teamId}/schedule/timeCards?$filter=userId eq '${userId}'`,
          {
             headers: {
                Authorization: `Bearer ${accessToken}`,
@@ -15,7 +15,20 @@ async function getLatestSession(userId, teamId) {
          }
       );
 
-      const timeCards = response.data.value;
+      let timeCards = response.data.value;
+      let nextLink = response.data["@odata.nextLink"];
+
+      while (nextLink) {
+         const nextResponse = await axios.get(nextLink, {
+            headers: {
+               Authorization: `Bearer ${accessToken}`,
+               "MS-APP-ACTS-AS": userId,
+            },
+         });
+         timeCards = timeCards.concat(nextResponse.data.value);
+         nextLink = nextResponse.data["@odata.nextLink"];
+      }
+
       const latestSession = timeCards
          .reverse()
          .find((timeCard) => timeCard.userId === userId);
