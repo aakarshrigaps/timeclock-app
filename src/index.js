@@ -1,9 +1,16 @@
-const { app, BrowserWindow, ipcMain, contextBridge } = require("electron");
+const {
+   app,
+   BrowserWindow,
+   ipcMain,
+   contextBridge,
+   powerMonitor,
+   powerSaveBlocker,
+} = require("electron");
 const { updateElectronApp } = require("update-electron-app");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const path = require("path");
-const log = require('electron-log');
+const log = require("electron-log");
 const {
    getUserId,
    getTeamId,
@@ -18,7 +25,11 @@ const {
    endBreak,
    getPresence,
 } = require("./scripts/timecard-api");
-const { calculateBreakDuration, calculateBreakMins, isTeamsRunning } = require("./scripts/utils");
+const {
+   calculateBreakDuration,
+   calculateBreakMins,
+   isTeamsRunning,
+} = require("./scripts/utils");
 
 let isPromptOpen = false;
 let isReminderOpen = false;
@@ -26,6 +37,7 @@ let isReminderLoopActive = false;
 let mainWindow;
 let reminderWindow;
 let store; // Declare store variable
+let powerSaveId = null;
 
 // Check for single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -49,7 +61,12 @@ if (!gotTheLock) {
 
    app.on("ready", async () => {
       // Check for updates using update-electron-app
-      updateElectronApp();
+      updateElectronApp({
+         updateInterval: "1 hour",
+         logger: require("electron-log"),
+      });
+
+      powerSaveId = powerSaveBlocker.start("prevent-app-suspension");
 
       // Dynamically import electron-store (ESM)
       const Store = (await import("electron-store")).default;
@@ -58,6 +75,57 @@ if (!gotTheLock) {
       // Check if user details are already stored
       let userConfig = store.get("user-config");
       let userIds = store.get("user-ids");
+
+      powerMonitor.on("suspend", () => {
+         log.info(
+            "System is going to sleep. Starting a break and keeping the app running in the background..."
+         );
+         (async () => {
+            let timecard = await getLatestSession(
+               userIds.userId,
+               userIds.teamId
+            ).catch(async (error) => {
+               if (error.code === "ECONNRESET") {
+                  log.error(
+                     "Connection reset error occurred. Relaunching the app..."
+                  );
+                  relaunchApp();
+               } else {
+                  log.error(
+                     "Error while fetching latest timecard state:",
+                     error
+                  );
+                  throw error;
+               }
+            });
+            log.info("Latest timecard state:", timecard);
+            //TODO: fix this break issue later
+            if (timecard.state === "clockedIn") {
+               await startBreak(
+                  userIds.userId,
+                  userIds.teamId,
+                  timecard.id
+               ).catch(async (error) => {
+                  if (error.code === "ECONNRESET") {
+                     log.error(
+                        "Connection reset error occurred. Relaunching the app..."
+                     );
+                     relaunchApp();
+                  } else {
+                     log.error("Error while starting break:", error);
+                     throw error;
+                  }
+               });
+               log.info("Break started successfully.");
+            }
+         })();
+         // powerSaveBlocker.stop(powerSaveId);
+      });
+
+      powerMonitor.on("resume", () => {
+         log.info("System resumed from sleep. Relaunching the app...");
+         relaunchApp();
+      });
 
       if (
          !userConfig ||
@@ -80,22 +148,30 @@ if (!gotTheLock) {
             store.set("user-config", userDetails);
             userConfig = userDetails;
             await authenticateEmail();
-            let userId = await getUserId(userConfig.email).catch(async (error) => {
-               if (error.code === 'ECONNRESET') {
-                 log.error("Connection reset error occurred. Relaunching the app...");
-                 await relaunchApp();
-               } else {
-                 throw error;
+            let userId = await getUserId(userConfig.email).catch(
+               async (error) => {
+                  if (error.code === "ECONNRESET") {
+                     log.error(
+                        "Connection reset error occurred. Relaunching the app..."
+                     );
+                     relaunchApp();
+                  } else {
+                     throw error;
+                  }
                }
-            });
-            teamId = await getTeamId(userId, userConfig.teamName).catch(async (error) => {
-               if (error.code === 'ECONNRESET') {
-                 log.error("Connection reset error occurred. Relaunching the app...");
-                 await relaunchApp();
-               } else {
-                 throw error;
+            );
+            teamId = await getTeamId(userId, userConfig.teamName).catch(
+               async (error) => {
+                  if (error.code === "ECONNRESET") {
+                     log.error(
+                        "Connection reset error occurred. Relaunching the app..."
+                     );
+                     relaunchApp();
+                  } else {
+                     throw error;
+                  }
                }
-            });
+            );
             store.set("user-ids", { userId, teamId });
             startMainLoop();
          });
@@ -174,34 +250,42 @@ if (!gotTheLock) {
       if (!owners) {
          // console.log("Fetching team owners...");
          owners = await getOwners(teamId).catch(async (error) => {
-            if (error.code === 'ECONNRESET') {
-              log.error("Connection reset error occurred. Relaunching the app...");
-              await relaunchApp();
+            if (error.code === "ECONNRESET") {
+               log.error(
+                  "Connection reset error occurred. Relaunching the app..."
+               );
+               relaunchApp();
             } else {
-              throw error;
+               throw error;
             }
          });
          store.set("owners", { owners });
       }
 
-      const latestTimeCard = await getLatestSession(userId, teamId).catch(async (error) => {
-         if (error.code === 'ECONNRESET') {
-           log.error("Connection reset error occurred. Relaunching the app...");
-           await relaunchApp();
-         } else {
-           throw error;
+      const latestTimeCard = await getLatestSession(userId, teamId).catch(
+         async (error) => {
+            if (error.code === "ECONNRESET") {
+               log.error(
+                  "Connection reset error occurred. Relaunching the app..."
+               );
+               relaunchApp();
+            } else {
+               throw error;
+            }
          }
-      });
+      );
       let timeCardId = latestTimeCard?.id;
       let state = latestTimeCard?.state;
       store.set("latest-time-card", { latestTimeCard });
 
       let userStatus = await getPresence(userId).catch(async (error) => {
-         if (error.code === 'ECONNRESET') {
-           log.error("Connection reset error occurred. Relaunching the app...");
-           await relaunchApp();
+         if (error.code === "ECONNRESET") {
+            log.error(
+               "Connection reset error occurred. Relaunching the app..."
+            );
+            relaunchApp();
          } else {
-           throw error;
+            throw error;
          }
       });
       store.set("user-status", userStatus);
@@ -260,14 +344,18 @@ if (!gotTheLock) {
             state === "clockedIn"
          ) {
             let clockInData = store.get("latest-time-card");
-            await startBreak(userId, teamId, timeCardId).catch(async (error) => {
-               if (error.code === 'ECONNRESET') {
-                 log.error("Connection reset error occurred. Relaunching the app...");
-                 await relaunchApp();
-               } else {
-                 throw error;
+            await startBreak(userId, teamId, timeCardId).catch(
+               async (error) => {
+                  if (error.code === "ECONNRESET") {
+                     log.error(
+                        "Connection reset error occurred. Relaunching the app..."
+                     );
+                     relaunchApp();
+                  } else {
+                     throw error;
+                  }
                }
-            });
+            );
             // commenting out break start notification mail
             // const localBreakStartTime = new Date().toLocaleString();
             // await notifyUserAndTeam(
@@ -284,11 +372,13 @@ if (!gotTheLock) {
          ) {
             let clockInData = store.get("latest-time-card");
             await endBreak(userId, teamId, timeCardId).catch(async (error) => {
-               if (error.code === 'ECONNRESET') {
-                 log.error("Connection reset error occurred. Relaunching the app...");
-                 await relaunchApp();
+               if (error.code === "ECONNRESET") {
+                  log.error(
+                     "Connection reset error occurred. Relaunching the app..."
+                  );
+                  relaunchApp();
                } else {
-                 throw error;
+                  throw error;
                }
             });
             // commenting out break end notification mail
@@ -332,6 +422,8 @@ if (!gotTheLock) {
             }
          }
       }
+      let lastUpdated = new Date().toLocaleString();
+      store.set("last-updated", lastUpdated);
       setTimeout(startMainLoop, 60000); // Repeat the check after a minute
    }
 
@@ -386,9 +478,11 @@ if (!gotTheLock) {
          let { userId, teamId } = store.get("user-ids");
          let { owners } = store.get("owners");
          let timeCard = await clockIn(userId, teamId).catch(async (error) => {
-            if (error.code === 'ECONNRESET') {
-               log.error("Connection reset error occurred. Relaunching the app...");
-              await relaunchApp();
+            if (error.code === "ECONNRESET") {
+               log.error(
+                  "Connection reset error occurred. Relaunching the app..."
+               );
+               relaunchApp();
             }
             throw error;
          });
@@ -416,11 +510,13 @@ if (!gotTheLock) {
       let { latestTimeCard } = store.get("latest-time-card");
       let { owners } = store.get("owners");
       await clockOut(userId, teamId, latestTimeCard.id).catch(async (error) => {
-         if (error.code === 'ECONNRESET') {
-           log.error("Connection reset error occurred. Relaunching the app...");
-           await relaunchApp();
+         if (error.code === "ECONNRESET") {
+            log.error(
+               "Connection reset error occurred. Relaunching the app..."
+            );
+            relaunchApp();
          } else {
-           throw error;
+            throw error;
          }
       });
       let clockedOutTime = new Date().toLocaleString();
@@ -436,8 +532,7 @@ if (!gotTheLock) {
       );
    }
 
-   async function relaunchApp()
-   {
+   function relaunchApp() {
       app.relaunch();
       app.exit();
    }
