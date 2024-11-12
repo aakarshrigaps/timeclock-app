@@ -1,6 +1,6 @@
 const axios = require("axios");
 const getAccessToken = require("./ms-auth").getAccessToken;
-const log = require('electron-log');
+const log = require("electron-log");
 
 async function getUserId(email) {
    const accessToken = await getAccessToken();
@@ -19,6 +19,29 @@ async function getUserId(email) {
    } catch (error) {
       log.error(
          "Error fetching user ID:",
+         error.response ? error.response.data : error.message
+      );
+      throw error;
+   }
+}
+
+async function getUsername(userId) {
+   const accessToken = await getAccessToken();
+
+   try {
+      const response = await axios.get(
+         `https://graph.microsoft.com/v1.0/users/${userId}`,
+         {
+            headers: {
+               Authorization: `Bearer ${accessToken}`,
+            },
+         }
+      );
+
+      return response.data.displayName;
+   } catch (error) {
+      console.log(
+         "Error fetching username:",
          error.response ? error.response.data : error.message
       );
       throw error;
@@ -78,7 +101,14 @@ async function getOwners(teamId) {
    }
 }
 
-async function notifyUserAndTeam(userId, subject, message, to = [], cc = []) {
+async function notifyUserAndTeam(
+   userId,
+   subject,
+   message,
+   messageType = "text",
+   to = [],
+   cc = []
+) {
    const accessToken = await getAccessToken();
 
    // Ensure 'to' and 'cc' are arrays
@@ -96,7 +126,7 @@ async function notifyUserAndTeam(userId, subject, message, to = [], cc = []) {
       message: {
          subject: subject,
          body: {
-            contentType: "Text",
+            contentType: messageType,
             content: message,
          },
          toRecipients: to.map((email) => ({
@@ -182,6 +212,7 @@ async function sendHtmlReport(userId, subject, htmlMessage, to = [], cc = []) {
 
 module.exports = {
    getUserId,
+   getUsername,
    getTeamId,
    getOwners,
    notifyUserAndTeam,

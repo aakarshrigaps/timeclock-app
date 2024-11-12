@@ -1,15 +1,15 @@
 const { exec } = require("child_process");
 const os = require("os");
 
-function calculateBreakDuration(breakStartTime, breakEndTime) {
-   const breakDurationMs = new Date(breakEndTime) - new Date(breakStartTime);
-   const breakDurationHrs = Math.floor(breakDurationMs / 3600000);
-   const breakDurationMins = Math.floor((breakDurationMs % 3600000) / 60000);
-   const breakDurationSecs = Math.floor((breakDurationMs % 60000) / 1000);
+function calculateDuration(breakStartTime, breakEndTime) {
+   const durationMs = new Date(breakEndTime) - new Date(breakStartTime);
+   const durationHrs = Math.floor(durationMs / 3600000);
+   const durationMins = Math.floor((durationMs % 3600000) / 60000);
+   const durationSecs = Math.floor((durationMs % 60000) / 1000);
    const durationString = [
-      breakDurationHrs > 0 ? `${breakDurationHrs} hrs` : "",
-      breakDurationMins > 0 ? `${breakDurationMins} mins` : "",
-      breakDurationSecs > 0 ? `${breakDurationSecs} secs` : "",
+      durationHrs > 0 ? `${durationHrs} hrs` : "",
+      durationMins > 0 ? `${durationMins} mins` : "",
+      durationSecs > 0 ? `${durationSecs} secs` : "",
    ]
       .filter(Boolean)
       .join(" ");
@@ -53,4 +53,28 @@ async function isTeamsRunning() {
    });
 }
 
-module.exports = { calculateBreakDuration, calculateBreakMins, isTeamsRunning };
+function calculateActiveDuration(clockIn, clockOut, breakDurationMs) {
+   const activeDurationMs = new Date(clockOut) - new Date(clockIn) - breakDurationMs;
+   const activeDurationHrs = Math.floor(activeDurationMs / 3600000);
+   const activeDurationMins = Math.floor((activeDurationMs % 3600000) / 60000);
+   const activeDurationSecs = Math.floor((activeDurationMs % 60000) / 1000);
+   const activeDuration = `${
+      activeDurationHrs > 0 ? `${activeDurationHrs} hrs ` : ""
+   }${activeDurationMins > 0 ? `${activeDurationMins} mins ` : ""}${
+      activeDurationSecs > 0 ? `${activeDurationSecs} secs` : ""
+   }`.trim();
+   return activeDuration;
+}
+
+function convertMsToHrsMinsSecs(ms) {
+   const hours = Math.floor(ms / 3600000);
+   const minutes = Math.floor((ms % 3600000) / 60000);
+   const seconds = Math.floor((ms % 60000) / 1000);
+
+   return `${hours > 0 ? `${hours} hrs ` : ""}${
+      minutes > 0 ? `${minutes} mins ` : ""
+   }${seconds > 0 ? `${seconds} secs` : ""}`.trim();
+}
+
+
+module.exports = { calculateDuration, calculateBreakMins, isTeamsRunning, calculateActiveDuration, convertMsToHrsMinsSecs };

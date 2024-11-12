@@ -32,7 +32,7 @@ module.exports = {
       {
          //for multi-platforms
          name: "@electron-forge/maker-zip",
-         platforms:["darwin", "linux", "win32"],
+         platforms:["darwin", "win32"],
          config: {
             icon: "assets/images/logo",
          },

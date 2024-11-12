@@ -16,6 +16,7 @@ const {
    getTeamId,
    getOwners,
    notifyUserAndTeam,
+   getUsername,
 } = require("./scripts/user-team-api");
 const {
    getLatestSession,
@@ -24,6 +25,8 @@ const {
    startBreak,
    endBreak,
    getPresence,
+   generateClockInEmail,
+   generateSummaryEmail,
 } = require("./scripts/timecard-api");
 const {
    calculateBreakDuration,
@@ -160,7 +163,7 @@ if (!gotTheLock) {
                   }
                }
             );
-            teamId = await getTeamId(userId, userConfig.teamName).catch(
+            let teamId = await getTeamId(userId, userConfig.teamName).catch(
                async (error) => {
                   if (error.code === "ECONNRESET") {
                      log.error(
@@ -239,6 +242,8 @@ if (!gotTheLock) {
       const { email, teamName } = store.get("user-config") || {};
       let { userId, teamId } = store.get("user-ids") || {};
       let { owners } = store.get("owners") || {};
+      let username = store.get("username") || (await getUsername(email));
+      store.set("username", username);
 
       // if (!userId || !teamId) {
       //    // console.log("Fetching user and team IDs...");
@@ -474,6 +479,7 @@ if (!gotTheLock) {
    async function clockInSequence() {
       try {
          // console.log("Clocking In");
+         let username = store.get("username");
          let { email, teamName } = store.get("user-config");
          let { userId, teamId } = store.get("user-ids");
          let { owners } = store.get("owners");
@@ -490,10 +496,17 @@ if (!gotTheLock) {
          let clockedInTime = timeCard.clockInEvent.dateTime;
          const localClockedInTime = new Date(clockedInTime).toLocaleString();
          store.set("latest-time-card", { clockedInTime, timeCardId });
+         let htmlMessage = generateClockInEmail(
+            username,
+            email,
+            teamName,
+            localClockedInTime
+         );
          await notifyUserAndTeam(
             userId,
             "Clock in Update",
-            `User ${email} has clocked in at ${localClockedInTime} to team ${teamName}`,
+            htmlMessage,
+            "html",
             owners,
             [email]
          );
@@ -505,6 +518,7 @@ if (!gotTheLock) {
 
    async function clockOutSequence() {
       // console.log("Clocking Out");
+      let username = store.get("username");
       let { email, teamName } = store.get("user-config");
       let { userId, teamId } = store.get("user-ids");
       let { latestTimeCard } = store.get("latest-time-card");
@@ -523,10 +537,30 @@ if (!gotTheLock) {
       const localClockedInTime = new Date(
          latestTimeCard.clockInEvent.dateTime
       ).toLocaleString();
+      latestTimeCard = await getLatestSession(userId, teamId).catch(
+         async (error) => {
+            if (error.code === "ECONNRESET") {
+               log.error(
+                  "Connection reset error occurred. Relaunching the app..."
+               );
+               relaunchApp();
+            } else {
+               throw error;
+            }
+         }
+      );
+      store.set("latest-time-card", { latestTimeCard });
+      let htmlMessage = generateSummaryEmail(
+         username,
+         email,
+         teamName,
+         latestTimeCard
+      );
       await notifyUserAndTeam(
          userId,
          "Clock out Update",
-         `User ${email} has clocked out at ${clockedOutTime} from team ${teamName}. Clocked in at ${localClockedInTime}`,
+         htmlMessage,
+         "html",
          owners,
          [email]
       );

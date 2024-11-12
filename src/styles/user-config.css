@@ -42,6 +42,11 @@ input[type="email"] {
     transition: outline-color 0.3s ease; /* Smooth transition for outline color */
 }
 
+.required {
+   color: red;
+   margin-left: 2px;
+}
+
 button {
     align-self: center;
     width: 40%;
