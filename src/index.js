@@ -29,10 +29,11 @@ const {
    generateSummaryEmail,
 } = require("./scripts/timecard-api");
 const {
-   calculateBreakDuration,
+   calculateDuration,
    calculateBreakMins,
    isTeamsRunning,
 } = require("./scripts/utils");
+const { autoUpdater } = require("electron-updater");
 
 let isPromptOpen = false;
 let isReminderOpen = false;
@@ -49,35 +50,62 @@ app.on("window-all-closed", (event) => {
    event.preventDefault(); // Prevent the default behavior of quitting the app
 });
 
+autoUpdater.on("update-downloaded", () => {
+   log.info("Update downloaded, restarting the app...");
+   autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on("checking-for-update", () => {
+   log.info("Checking for updates...");
+});
+
+autoUpdater.on("update-available", () => {
+   log.info("Update available, downloading...");
+});
+
+autoUpdater.on("update-not-available", () => {
+   log.info("No updates available.");
+});
+
+autoUpdater.on("download-progress", (progress) => {
+   log.info("Download progress:", progress.percent);
+});
+
+function relaunchApp() {
+   app.relaunch();
+   app.exit();
+}
+
 if (!gotTheLock) {
    // If the lock is not acquired, quit the app
    app.quit();
 } else {
    // If the lock is acquired, set up the event listener for second instances
    app.on("second-instance", () => {
+      log.info("An instance of the app is already running.");
       // When another instance tries to run, this event will be triggered
       if (mainWindow && !mainWindow.isDestroyed()) {
          if (mainWindow.isMinimized()) mainWindow.restore();
          mainWindow.focus();
       }
    });
-
+   
    app.on("ready", async () => {
+      log.info("App started. Version:", app.getVersion());
       // Check for updates using update-electron-app
-      //updateElectronApp({ updateInterval: "1 hour", logger: require("electron-log")});      
-      
-      process.on('unhandledRejection', (error) => {
+      //updateElectronApp({ updateInterval: "1 hour", logger: require("electron-log")});
+      autoUpdater.checkForUpdatesAndNotify();
+
+      process.on("unhandledRejection", (error) => {
          log.error("Unhandled promise rejection:", error);
-         relaunchApp();
-      });      
-      
-      process.on('uncaughtException', (error) => {
+      });
+
+      process.on("uncaughtException", (error) => {
          log.error("Uncaught exception:", error);
-         relaunchApp();
-      });      
-      
+      });
+
       powerSaveId = powerSaveBlocker.start("prevent-app-suspension");
-      
+
       // Dynamically import electron-store (ESM)
       const Store = (await import("electron-store")).default;
       store = new Store(); // Initialize the store
@@ -311,9 +339,7 @@ if (!gotTheLock) {
             let clockInData = store.get("latest-time-card");
             await startBreak(userId, teamId, timeCardId).catch(
                async (error) => {
-                  log.error(
-                     "An error occurred, relaunching the app..."
-                  );
+                  log.error("An error occurred, relaunching the app...");
                   relaunchApp();
                }
             );
@@ -498,11 +524,6 @@ if (!gotTheLock) {
          owners,
          [email]
       );
-   }
-
-   function relaunchApp() {
-      app.relaunch();
-      app.exit();
    }
 
    // Function to create a BrowserWindow with specific width and height

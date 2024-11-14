@@ -1,6 +1,6 @@
 {
    "name": "timeclock-app",
-   "version": "2.4.4",
+   "version": "2.4.5",
    "description": "AutoTimeClock App",
    "repository": {
       "type": "git",
@@ -10,7 +10,7 @@
    "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
       "start": "electron-forge start",
-      "pack": "electron-builder --dir",
+      "pack": "electron-builder --p always",
       "dist": "electron-builder",
       "package": "electron-forge package",
       "make": "electron-forge make",
@@ -22,6 +22,10 @@
          "target": "nsis",
          "icon": "assets/images/logo.ico"
       },
+      "mac": {
+         "target": "dmg",
+         "icon": "assets/images/logo.icns"
+      },
       "files": [
          "src/**/*"
       ],
@@ -32,7 +36,8 @@
          {
             "provider": "github",
             "owner": "aakarshrigaps",
-            "repo": "timeclock-app"
+            "repo": "timeclock-app",
+            "releaseType": "draft"
          }
       ]
    },
@@ -44,6 +49,7 @@
       "dotenv": "^16.4.5",
       "electron-log": "^5.2.0",
       "electron-store": "^10.0.0",
+      "electron-updater": "^6.3.9",
       "nodemailer": "^6.9.15",
       "update-electron-app": "^3.0.0"
    },
