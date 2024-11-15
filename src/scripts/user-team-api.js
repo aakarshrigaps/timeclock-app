@@ -7,7 +7,7 @@ async function getUserId(email) {
 
    try {
       const response = await axios.get(
-         `https://graph.microsoft.com/v1.0/users/${email}`,
+         `https://graph.microsoft.com/v1.0/users/${email}?$select=id`,
          {
             headers: {
                Authorization: `Bearer ${accessToken}`,
@@ -30,7 +30,7 @@ async function getUsername(userId) {
 
    try {
       const response = await axios.get(
-         `https://graph.microsoft.com/v1.0/users/${userId}`,
+         `https://graph.microsoft.com/v1.0/users/${userId}?$select=displayName`,
          {
             headers: {
                Authorization: `Bearer ${accessToken}`,
@@ -48,12 +48,41 @@ async function getUsername(userId) {
    }
 }
 
+async function getTeams()
+{
+   const accessToken = await getAccessToken();
+
+   try {
+      let teams = [];
+      let url = `https://graph.microsoft.com/v1.0/teams?$select=id,displayName`;
+
+      while (url) {
+         const response = await axios.get(url, {
+            headers: {
+               Authorization: `Bearer ${accessToken}`,
+            },
+         });
+
+         teams = teams.concat(response.data.value);
+         url = response.data["@odata.nextLink"];
+      }
+
+      return teams;
+   } catch (error) {
+      log.error(
+         "Error fetching teams:",
+         error.response ? error.response.data : error.message
+      );
+      throw error;
+   }
+}
+
 async function getTeamId(userId, teamName) {
    const accessToken = await getAccessToken();
 
    try {
       const response = await axios.get(
-         `https://graph.microsoft.com/v1.0/users/${userId}/joinedTeams`,
+         `https://graph.microsoft.com/v1.0/users/${userId}/joinedTeams?$select=id,displayName`,
          {
             headers: {
                Authorization: `Bearer ${accessToken}`,
@@ -78,7 +107,7 @@ async function getOwners(teamId) {
 
    try {
       const response = await axios.get(
-         `https://graph.microsoft.com/v1.0/groups/${teamId}/owners`,
+         `https://graph.microsoft.com/v1.0/groups/${teamId}/owners?$select=mail`,
          {
             headers: {
                Authorization: `Bearer ${accessToken}`,
@@ -212,6 +241,7 @@ async function sendHtmlReport(userId, subject, htmlMessage, to = [], cc = []) {
 
 module.exports = {
    getUserId,
+   getTeams,
    getUsername,
    getTeamId,
    getOwners,

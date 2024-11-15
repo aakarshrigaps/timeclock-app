@@ -13,6 +13,7 @@ const path = require("path");
 const log = require("electron-log");
 const {
    getUserId,
+   getTeams,
    getTeamId,
    getOwners,
    notifyUserAndTeam,
@@ -89,7 +90,7 @@ if (!gotTheLock) {
          mainWindow.focus();
       }
    });
-   
+
    app.on("ready", async () => {
       log.info("App started. Version:", app.getVersion());
       // Check for updates using update-electron-app
@@ -157,9 +158,23 @@ if (!gotTheLock) {
          !userIds.teamId
       ) {
          // If no configuration is found, prompt the user for details
-         mainWindow = createWindow(450, 250); // Default size for email-input.html
+         mainWindow = createWindow(450, 300); // Default size for email-input.html
          mainWindow.loadFile("./src/pages/user-config.html");
 
+         ipcMain.on("validate-user-details", async(event, userDetails)=>{   
+            let teams = store.get("teams");
+            if(!teams){
+               teams = await getTeams();
+               store.set("teams", teams);
+            }               
+            if (teams.some((team) => team.displayName === userDetails.teamName)) {
+               event.sender.send("validationMessage", "Team name is valid.");
+               store.delete("teams");
+            } else {
+               event.sender.send("validationMessage", "Invalid team name. Please try again.");
+            }
+         })
+         
          ipcMain.on("save-user-details", async (event, userDetails) => {
             // Save user details to the store
             if (mainWindow) {
@@ -182,9 +197,11 @@ if (!gotTheLock) {
                }
             );
             store.set("user-ids", { userId, teamId });
+            updatePresence();
             startMainLoop();
          });
       } else {
+         updatePresence();
          startMainLoop();
       }
    });
@@ -222,7 +239,7 @@ if (!gotTheLock) {
          });
 
          // Show the verify-otp.html page
-         mainWindow = createWindow(450, 250);
+         mainWindow = createWindow(450, 280);
          mainWindow.loadFile("./src/pages/verify-otp.html");
 
          ipcMain.on("verify-otp", (event, enteredOtp) => {
@@ -249,6 +266,7 @@ if (!gotTheLock) {
       let { userId, teamId } = store.get("user-ids") || {};
       let { owners } = store.get("owners") || {};
       let username = store.get("username") || (await getUsername(email));
+      let userStatus = store.get("user-status") || {};
       store.set("username", username);
 
       // if (!userId || !teamId) {
@@ -277,12 +295,6 @@ if (!gotTheLock) {
       let state = latestTimeCard?.state;
       store.set("latest-time-card", { latestTimeCard });
 
-      let userStatus = await getPresence(userId).catch(async (error) => {
-         log.error("An error has occurred, relaunching the app...");
-         relaunchApp();
-      });
-      store.set("user-status", userStatus);
-
       if (await isTeamsRunning()) {
          if (
             !state ||
@@ -293,6 +305,12 @@ if (!gotTheLock) {
                isPromptOpen = true;
                mainWindow = createWindow(450, 250);
                mainWindow.loadFile("./src/pages/clock-in-prompt.html");
+               mainWindow.webContents.on("did-finish-load", () => {
+                  mainWindow.webContents.send(
+                     "team-name",
+                     store.get("user-config").teamName
+                  );
+               });
                ipcMain.once(
                   "clock-in-confirmation",
                   async (_, shouldClockIn) => {
@@ -390,6 +408,12 @@ if (!gotTheLock) {
                isPromptOpen = true;
                mainWindow = createWindow(450, 250);
                mainWindow.loadFile("./src/pages/clock-out-prompt.html");
+               mainWindow.webContents.on("did-finish-load", () => {
+                  mainWindow.webContents.send(
+                     "team-name",
+                     store.get("user-config").teamName
+                  );
+               });
                ipcMain.once(
                   "clock-out-confirmation",
                   async (_, shouldClockOut) => {
@@ -405,7 +429,19 @@ if (!gotTheLock) {
       }
       let lastUpdated = new Date().toLocaleString();
       store.set("last-updated", lastUpdated);
-      setTimeout(startMainLoop, 60000); // Repeat the check after a minute
+      setTimeout(startMainLoop, 1000); // Repeat the check after a minute
+   }
+
+   async function updatePresence() {
+      const { userId } = store.get("user-ids") || {};
+
+      const userStatus = await getPresence(userId).catch(async (error) => {
+         log.error("An error has occurred, relaunching the app...");
+         relaunchApp();
+      });
+      store.set("user-status", userStatus);
+
+      setTimeout(updatePresence, 60000); // Repeat every 1 minute
    }
 
    async function startReminderLoop(reminderTime) {
@@ -418,7 +454,12 @@ if (!gotTheLock) {
          setTimeout(async () => {
             mainWindow = createWindow(450, 250);
             mainWindow.loadFile("./src/pages/clock-in-prompt.html");
-
+            mainWindow.webContents.on("did-finish-load", () => {
+               mainWindow.webContents.send(
+                  "team-name",
+                  store.get("user-config").teamName
+               );
+            });
             ipcMain.once(
                "clock-in-confirmation",
                async (event, shouldClockIn) => {
