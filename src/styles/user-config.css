@@ -34,8 +34,14 @@ body {
       background-color: #4f52a1;
    }
 
+   button:disabled {
+      background-color: #4f52a1;
+      color: #fff;
+      cursor: not-allowed;
+   }
+
    .tooltip .tooltiptext {
-      background-color: #6c757d;
+      background-color: #3e4449;
       color: #fff;
    }
 }
@@ -63,6 +69,12 @@ body {
 
    button:hover {
       background-color: #696cbb;
+   }
+
+   button:disabled {
+      background-color: #696cbb;
+      color: #fff;
+      cursor: not-allowed;
    }
 
    .tooltip .tooltiptext {
@@ -123,7 +135,8 @@ button {
    position: relative;
    display: inline-block;
    cursor: pointer;
-   font-size: 10px;
+   font-size: 12px;
+   color: rgb(125, 125, 126);
 }
 
 /* Tooltip text */

@@ -11,15 +11,16 @@
          <h2>Verify OTP</h2>
          <form id="otp-form">
             <input
-               type="number"
+               type="text"
                class="otp-input"
                id="otp"
                name="otp"
                placeholder="Enter OTP"
                maxlength="6"
                required
+               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
             />
-            <p id="otp-error" style="color: red; margin-top: 10px"></p>
+            <p id="otp-error"></p>
             <button type="submit" class="submit-btn">Verify</button>
          </form>
       </div>

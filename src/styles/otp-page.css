@@ -82,6 +82,12 @@ h2 {
     transition: outline-color 0.3s ease; /* Smooth transition for outline color */
 }
 
+#otp-error{
+    color: rgb(251, 86, 44);
+    font-size: 14px;
+    margin-top: 5px;
+}
+
 .submit-btn {
     align-self: center;
     width: 40%; /* Same width for button */

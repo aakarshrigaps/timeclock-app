@@ -540,10 +540,6 @@ if (!gotTheLock) {
          log.error("An error has occurred, relaunching the app...");
          relaunchApp();
       });
-      let clockedOutTime = new Date().toLocaleString();
-      const localClockedInTime = new Date(
-         latestTimeCard.clockInEvent.dateTime
-      ).toLocaleString();
       latestTimeCard = await getLatestSession(userId, teamId).catch(
          async (error) => {
             log.error("An error has occurred, relaunching the app...");
