@@ -1,55 +1,92 @@
+@media (prefers-color-scheme: dark) {
+   body {
+      background-color: #1d1d1d;
+      color: #fff;
+   }
+
+   .confirmation-box {
+      background-color: #292929;
+   }
+
+   .yes-button {
+      background-color: #696cbb;
+      color: white;
+   }
+   .yes-button:hover {
+      background-color: #4f52a1;
+   }
+   .no-button {
+      background-color: #1f1f1f;
+      color: white;
+   }
+   .no-button:hover {
+      background-color: #000000;
+   }
+}
+
+@media (prefers-color-scheme: light) {
+   body {
+      background-color: #f0f0f0;
+      color: #000;
+   }
+
+   .confirmation-box {
+      background-color: #fff;
+   }
+
+   .yes-button {
+      background-color: #4f52a1;
+      color: #fff;
+   }
+   .yes-button:hover {
+      background-color: #696cbb;
+   }
+   .no-button {
+      background-color: #444444;
+      color: #fff;
+   }
+   .no-button:hover {
+      background-color: #595959;
+   }
+}
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #333;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    overflow: hidden; /* Prevent scrollbars */
- }
- .confirmation-box {
-    width: 85%;
-    height: 72%;
-    padding: 15px;
-    background-color: #444;
-    border-radius: 8px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
- }
- h2 {
-    margin-bottom: 15px;
- }
- p {
-    margin-bottom: 20px;
-    font-size: 15px;
- }
- .confirmation-box button {
-    margin: 10px;
-    padding: 10px 20px;
-    font-size: 15px;
-    cursor: pointer;
-    border: none;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
- }
- .yes-button {
-    background-color: #4caf50;
-    color: white;
- }
- .yes-button:hover {
-    background-color: #3e8e41;
- }
- .no-button {
-    background-color: #f44336;
-    color: white;
- }
- .no-button:hover {
-    background-color: #d32f2f;
- }
- .loading-spinner-overlay {
+   font-family: Arial, sans-serif;
+   margin: 0;
+   padding: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   height: 100vh;
+   overflow: hidden; /* Prevent scrollbars */
+}
+.confirmation-box {
+   width: 85%;
+   height: 72%;
+   padding: 15px;
+   border-radius: 8px;
+   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+   text-align: center;
+}
+h2 {
+   margin-bottom: 15px;
+   margin-top: 7px;
+}
+p {
+   margin-bottom: 20px;
+   font-size: 15px;
+   line-height: 20px;
+}
+.confirmation-box button {
+   margin: 0 10px 0 10px;
+   padding: 10px 20px;
+   font-size: 15px;
+   cursor: pointer;
+   border: none;
+   border-radius: 4px;
+   transition: background-color 0.3s ease;
+}
+.loading-spinner-overlay {
    position: fixed;
    top: 0;
    left: 0;
@@ -60,6 +97,11 @@ body {
    justify-content: center;
    align-items: center;
    z-index: 1000; /* Ensure it overlays on top */
+}
+
+#current-time,
+#team-name {
+   font-weight: bold;
 }
 
 .spinner {

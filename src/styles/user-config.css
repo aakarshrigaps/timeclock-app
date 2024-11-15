@@ -1,45 +1,103 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #333;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    overflow: hidden; /* Prevent scrollbars */
+   font-family: Arial, sans-serif;
+   margin: 0;
+   padding: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   height: 100vh;
+   overflow: hidden; /* Prevent scrollbars */
+}
+
+@media (prefers-color-scheme: dark) {
+   body {
+      background-color: #1d1d1d;
+      color: #fff;
+   }
+
+   .container {
+      background-color: #292929;
+   }
+
+   input[type="text"],
+   input[type="email"] {
+      border: 1px solid #ccc;
+      outline: 2px solid lightblue; /* Initial outline */
+   }
+
+   button {
+      background-color: #696cbb;
+      color: #fff;
+   }
+
+   button:hover {
+      background-color: #4f52a1;
+   }
+
+   .tooltip .tooltiptext {
+      background-color: #6c757d;
+      color: #fff;
+   }
+}
+
+@media (prefers-color-scheme: light) {
+   body {
+      background-color: #f0f0f0;
+      color: #000;
+   }
+
+   .container {
+      background-color: #fff;
+   }
+
+   input[type="text"],
+   input[type="email"] {
+      border: 1px solid #000;
+      outline: 2px solid lightblue; /* Initial outline */
+   }
+
+   button {
+      background-color: #4f52a1;
+      color: #fff;
+   }
+
+   button:hover {
+      background-color: #696cbb;
+   }
+
+   .tooltip .tooltiptext {
+      background-color: #f0f0f0;
+      color: #000;
+   }
 }
 
 .container {
-    width: 80%;
-    height: 80%;
-    padding: 15px;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+   width: 80%;
+   height: 75%;
+   padding: 15px;
+   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+   border-radius: 8px;
 }
 
 form {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+   display: flex;
+   flex-direction: column;
+   align-items: flex-start;
+   gap: 10px;
 }
 
 label {
-    font-weight: bold;
-    margin-bottom: 3px;
+   font-weight: bold;
+   margin-bottom: 3px;
 }
 
 input[type="text"],
 input[type="email"] {
-    width: 100%;
-    padding: 6px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    outline: 2px solid lightblue; /* Initial outline */
-    transition: outline-color 0.3s ease; /* Smooth transition for outline color */
+   width: 100%;
+   padding: 6px;
+   border-radius: 4px;
+   box-sizing: border-box;
+   transition: outline-color 0.3s ease; /* Smooth transition for outline color */
 }
 
 .required {
@@ -48,16 +106,44 @@ input[type="email"] {
 }
 
 button {
-    align-self: center;
-    width: 40%;
-    padding: 8px;
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+   align-self: center;
+   width: 40%;
+   padding: 8px;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   margin-top: 10px;
 }
 
-button:hover {
-    background-color: #0056b3;
+#validationMessage {
+   font-size: 12px;
+}
+
+.tooltip {
+   position: relative;
+   display: inline-block;
+   cursor: pointer;
+   font-size: 10px;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+   visibility: hidden;
+   width: 120px;
+   text-align: center;
+   border-radius: 5px;
+   padding: 5px;
+   position: absolute;
+   z-index: 1;
+   bottom: 125%; /* Position above the tooltip text */
+   left: 50%;
+   margin-left: -60px;
+   opacity: 0;
+   transition: opacity 0.3s;
+}
+
+/* Show tooltip text when hovering over the tooltip container */
+.tooltip:hover .tooltiptext {
+   visibility: visible;
+   opacity: 1;
 }

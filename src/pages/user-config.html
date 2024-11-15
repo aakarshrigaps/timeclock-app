@@ -12,9 +12,14 @@
             <label for="email">Email<span class="required">*</span></label>
             <input type="email" id="email" name="email" required />
             <label for="teamName"
-               >Teams Shift Name<span class="required">*</span></label
-            >
+               >Teams Shift Name<span class="required">*</span>
+               <span class="tooltip">
+                  <span class="fa-solid fa-circle-info">i</span>
+                  <span class="tooltiptext">Case sensitive</span>
+               </span>
+            </label>
             <input type="text" id="teamName" name="teamName" required />
+            <div id="validationMessage" class="validation-message"></div>
             <button type="submit">Submit</button>
          </form>
       </div>

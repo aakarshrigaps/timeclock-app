@@ -35,6 +35,10 @@ function updateCurrentTime() {
    currentTimeElement.textContent = currentTime;
 }
 
+ipcRenderer.on("team-name", (event, teamName) => {
+   document.getElementById("team-name").textContent = teamName;
+ });
+
 // Update the time when the page loads and every second
 window.onload = function () {
    updateCurrentTime(); // Initial call to set the time
