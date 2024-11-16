@@ -161,19 +161,24 @@ if (!gotTheLock) {
          mainWindow = createWindow(450, 300); // Default size for email-input.html
          mainWindow.loadFile("./src/pages/user-config.html");
 
-         ipcMain.on("validate-user-details", async(event, userDetails)=>{   
+         ipcMain.on("validate-user-details", async (event, userDetails) => {
             let teams = store.get("teams");
-            if(!teams){
+            if (!teams) {
                teams = await getTeams();
                store.set("teams", teams);
-            }               
-            if (teams.some((team) => team.displayName === userDetails.teamName)) {
+            }
+            if (
+               teams.some((team) => team.displayName === userDetails.teamName)
+            ) {
                event.sender.send("validationMessage", "Team name is valid.");
             } else {
-               event.sender.send("validationMessage", "Invalid team name. Please try again.");
+               event.sender.send(
+                  "validationMessage",
+                  "Invalid team name. Please try again."
+               );
             }
-         })
-         
+         });
+
          ipcMain.on("save-user-details", async (event, userDetails) => {
             // Save user details to the store
             if (mainWindow) {
@@ -296,11 +301,7 @@ if (!gotTheLock) {
       store.set("latest-time-card", { latestTimeCard });
 
       if (await isTeamsRunning()) {
-         if (
-            !state ||
-            state === "clockedOut" ||
-            state === "unknownFutureValue"
-         ) {
+         if (state === "clockedOut" || state === "unknownFutureValue") {
             if (!isPromptOpen && !isReminderOpen && !isReminderLoopActive) {
                isPromptOpen = true;
                mainWindow = createWindow(450, 250);
@@ -321,7 +322,9 @@ if (!gotTheLock) {
                            email,
                            teamName
                         );
-                        store.set("latest-time-card", timeCard);
+                        store.set("latest-time-card", {
+                           latestTimeCard: timeCard,
+                        });
                      } else {
                         if (!isReminderOpen && !isReminderLoopActive) {
                            // Check reminder flag again
@@ -361,46 +364,15 @@ if (!gotTheLock) {
                   relaunchApp();
                }
             );
-            // commenting out break start notification mail
-            // const localBreakStartTime = new Date().toLocaleString();
-            // await notifyUserAndTeam(
-            //    userId,
-            //    "Break Update",
-            //    `User ${email} has started a break at ${localBreakStartTime} in team ${teamName}`,
-            //    owners,
-            //    [email]
-            // );
          } else if (
             userStatus.availability !== "Away" &&
             userStatus.availability !== "BeRightBack" &&
             state === "onBreak"
          ) {
-            let clockInData = store.get("latest-time-card");
             await endBreak(userId, teamId, timeCardId).catch(async (error) => {
                log.error("An error has occurred, relaunching the app...");
                relaunchApp();
             });
-            // commenting out break end notification mail
-            // const breakEndTime = new Date().toISOString();
-            // const localBreakEndTime = new Date().toLocaleString();
-            // const breakStartTime =
-            //    clockInData.latestTimeCard.breaks[
-            //       clockInData.latestTimeCard.breaks.length - 1
-            //    ].start.dateTime;
-            // const breakDuration = calculateBreakDuration(
-            //    breakStartTime,
-            //    breakEndTime
-            // );
-            // const breakDurationMins = calculateBreakMins(breakStartTime, breakEndTime);
-            // if (breakDurationMins > 5) {
-            //    await notifyUserAndTeam(
-            //       userId,
-            //       "Break Update",
-            //       `User ${email} has ended a break at ${localBreakEndTime} in team ${teamName}. Break Duration: ${breakDuration}`,
-            //       owners,
-            //       [email]
-            //    );
-            // }
          }
       } else {
          if (state === "clockedIn") {
@@ -429,7 +401,7 @@ if (!gotTheLock) {
       }
       let lastUpdated = new Date().toLocaleString();
       store.set("last-updated", lastUpdated);
-      setTimeout(startMainLoop, 1000); // Repeat the check after a minute
+      setTimeout(startMainLoop, 6000); // Repeat every 6 seconds
    }
 
    async function updatePresence() {
@@ -465,7 +437,9 @@ if (!gotTheLock) {
                async (event, shouldClockIn) => {
                   if (shouldClockIn) {
                      let timeCard = await clockInSequence();
-                     store.set("latest-time-card", timeCard);
+                     store.set("latest-time-card", {
+                        latestTimeCard: timeCard,
+                     });
                      if (mainWindow) mainWindow.close();
                      isReminderLoopActive = false;
                   } else {
@@ -504,10 +478,9 @@ if (!gotTheLock) {
             log.error("An error has occurred, relaunching the app...");
             relaunchApp();
          });
-         let timeCardId = timeCard.id;
          let clockedInTime = timeCard.clockInEvent.dateTime;
          const localClockedInTime = new Date(clockedInTime).toLocaleString();
-         store.set("latest-time-card", { clockedInTime, timeCardId });
+         store.set("latest-time-card", { latestTimeCard: timeCard });
          let htmlMessage = generateClockInEmail(
             username,
             email,
