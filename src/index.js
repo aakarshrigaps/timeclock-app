@@ -398,6 +398,12 @@ if (!gotTheLock) {
                );
             }
          }
+         else if(state === "onBreak") {
+            await endBreak(userId, teamId, timeCardId).catch(async (error) => {
+               log.error("An error has occurred, relaunching the app...");
+               relaunchApp();
+            });
+         }
       }
       let lastUpdated = new Date().toLocaleString();
       store.set("last-updated", lastUpdated);
