@@ -6,7 +6,6 @@ const {
    powerMonitor,
    powerSaveBlocker,
 } = require("electron");
-const { updateElectronApp } = require("update-electron-app");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const path = require("path");
@@ -69,7 +68,7 @@ autoUpdater.on("update-not-available", () => {
 });
 
 autoUpdater.on("download-progress", (progress) => {
-   log.info("Download progress:", progress.percent);
+   log.info("Download progress:", progress.percent.toFixed(2) + "%");
 });
 
 function relaunchApp() {

@@ -223,7 +223,6 @@ function generateClockInEmail(name, email, teamName, clockInTime) {
          <div class="team-name">Team: <span>${teamName}</span></div>
          <div class="clock-in-time">Clocked in at: <span>${clockInTime}</span></div>
       </div>
-      <i style="font-size: 12px; color: #777;">This is an automated email from the AutoTimeClock app.</i>
    </body>
    </html>
  `;
