@@ -38,6 +38,7 @@ const { autoUpdater } = require("electron-updater");
 let isPromptOpen = false;
 let isReminderOpen = false;
 let isReminderLoopActive = false;
+let isMainLoopActive = false;
 let mainWindow;
 let reminderWindow;
 let store; // Declare store variable
@@ -92,9 +93,11 @@ if (!gotTheLock) {
 
    app.on("ready", async () => {
       log.info("App started. Version:", app.getVersion());
-      // Check for updates using update-electron-app
-      //updateElectronApp({ updateInterval: "1 hour", logger: require("electron-log")});
       autoUpdater.checkForUpdatesAndNotify();
+
+      setInterval(() => {
+         autoUpdater.checkForUpdatesAndNotify();
+      }, 2 * 60 * 60 * 1000); // Check for updates every 2 hours
 
       process.on("unhandledRejection", (error) => {
          log.error("Unhandled promise rejection:", error);
@@ -157,7 +160,8 @@ if (!gotTheLock) {
          !userIds.teamId
       ) {
          // If no configuration is found, prompt the user for details
-         mainWindow = createWindow(450, 300); // Default size for email-input.html
+         mainWindow = createWindow(450, 300); // Default size for email-input
+         log.info("Displaying user configuration page...");
          mainWindow.loadFile("./src/pages/user-config.html");
 
          ipcMain.on("validate-user-details", async (event, userDetails) => {
@@ -222,8 +226,8 @@ if (!gotTheLock) {
          const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-               user: "appautotimeclock@gmail.com", // Your Outlook email address
-               pass: "qyav mlvh omoy ueqo", // The app password you created
+               user: "appautotimeclock@gmail.com", // Email address
+               pass: "qyav mlvh omoy ueqo", // App password
             },
          });
 
@@ -244,6 +248,7 @@ if (!gotTheLock) {
 
          // Show the verify-otp.html page
          mainWindow = createWindow(450, 280);
+         log.info("Displaying OTP verification page...");
          mainWindow.loadFile("./src/pages/verify-otp.html");
 
          ipcMain.on("verify-otp", (event, enteredOtp) => {
@@ -266,19 +271,15 @@ if (!gotTheLock) {
 
    // Function to start the main loop
    async function startMainLoop() {
+      if(isMainLoopActive) return;
+      isMainLoopActive = true;
+      
       const { email, teamName } = store.get("user-config") || {};
       let { userId, teamId } = store.get("user-ids") || {};
       let { owners } = store.get("owners") || {};
       let username = store.get("username") || (await getUsername(email));
       let userStatus = store.get("user-status") || {};
       store.set("username", username);
-
-      // if (!userId || !teamId) {
-      //    // console.log("Fetching user and team IDs...");
-      //    userId = await getUserId(email);
-      //    teamId = await getTeamId(userId, teamName);
-      //    store.set("user-ids", { userId, teamId });
-      // }
 
       if (!owners) {
          // console.log("Fetching team owners...");
@@ -304,6 +305,7 @@ if (!gotTheLock) {
             if (!isPromptOpen && !isReminderOpen && !isReminderLoopActive) {
                isPromptOpen = true;
                mainWindow = createWindow(450, 250);
+               log.info("Displaying clock-in prompt...");
                mainWindow.loadFile("./src/pages/clock-in-prompt.html");
                mainWindow.webContents.on("did-finish-load", () => {
                   mainWindow.webContents.send(
@@ -331,6 +333,7 @@ if (!gotTheLock) {
                            isReminderLoopActive = true;
                            if (mainWindow) mainWindow.close();
                            reminderWindow = createWindow(450, 250);
+                           log.info("Displaying clock-in reminder...");
                            reminderWindow.loadFile(
                               "./src/pages/clock-in-reminder.html"
                            );
@@ -378,6 +381,7 @@ if (!gotTheLock) {
             if (!isPromptOpen && !isReminderOpen) {
                isPromptOpen = true;
                mainWindow = createWindow(450, 250);
+               log.info("Displaying clock-out prompt...");
                mainWindow.loadFile("./src/pages/clock-out-prompt.html");
                mainWindow.webContents.on("did-finish-load", () => {
                   mainWindow.webContents.send(
@@ -396,8 +400,7 @@ if (!gotTheLock) {
                   }
                );
             }
-         }
-         else if(state === "onBreak") {
+         } else if (state === "onBreak") {
             await endBreak(userId, teamId, timeCardId).catch(async (error) => {
                log.error("An error has occurred, relaunching the app...");
                relaunchApp();
@@ -406,6 +409,8 @@ if (!gotTheLock) {
       }
       let lastUpdated = new Date().toLocaleString();
       store.set("last-updated", lastUpdated);
+
+      isMainLoopActive = false;
       setTimeout(startMainLoop, 6000); // Repeat every 6 seconds
    }
 
@@ -430,6 +435,7 @@ if (!gotTheLock) {
          );
          setTimeout(async () => {
             mainWindow = createWindow(450, 250);
+            log.info("Displaying clock-in prompt...");
             mainWindow.loadFile("./src/pages/clock-in-prompt.html");
             mainWindow.webContents.on("did-finish-load", () => {
                mainWindow.webContents.send(
@@ -451,6 +457,7 @@ if (!gotTheLock) {
                      // User chose not to clock in, reschedule the reminder loop
                      if (mainWindow) mainWindow.close();
                      reminderWindow = createWindow(450, 250);
+                     log.info("Displaying clock-in reminder...");
                      reminderWindow.loadFile(
                         "./src/pages/clock-in-reminder.html"
                      );

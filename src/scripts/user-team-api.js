@@ -171,6 +171,7 @@ async function notifyUserAndTeam(
    // console.log( "Request body for sending mail:", JSON.stringify(mailOptions, null, 2));
 
    try {
+      log.info("Attempting to send email notification to user and team.");
       await axios.post(
          `https://graph.microsoft.com/v1.0/users/${userId}/sendMail`,
          mailOptions,
@@ -181,58 +182,7 @@ async function notifyUserAndTeam(
             },
          }
       );
-      // console.log("Email sent successfully.");
-   } catch (error) {
-      log.error("Error sending email:", error.response.data);
-      throw error; // Optionally re-throw the error if you want to handle it further up the call stack
-   }
-}
-
-async function sendHtmlReport(userId, subject, htmlMessage, to = [], cc = []) {
-   const accessToken = await getAccessToken();
-
-   // Ensure
-   if (!Array.isArray(to)) {
-      log.info("Expected 'to' to be an array.");
-      to = [];
-   }
-   if (!Array.isArray(cc)) {
-      log.info("Expected 'cc' to be an array.");
-      cc = [];
-   }
-
-   // Prepare the mail options
-   const mailOptions = {
-      message: {
-         subject: subject,
-         body: {
-            contentType: "html",
-            content: htmlMessage,
-         },
-         toRecipients: to.map((email) => ({
-            emailAddress: { address: email },
-         })),
-         ccRecipients: cc.map((email) => ({
-            emailAddress: { address: email },
-         })),
-      },
-   };
-
-   // Log the request body for debugging
-   // console.log( "Request body for sending mail:", JSON.stringify(mailOptions, null, 2));
-
-   try {
-      await axios.post(
-         `https://graph.microsoft.com/v1.0/users/${userId}/sendMail`,
-         mailOptions,
-         {
-            headers: {
-               Authorization: `Bearer ${accessToken}`,
-               "Content-Type": "application/json",
-            },
-         }
-      );
-      // console.log("Email sent successfully.");
+      log.info("Email sent successfully.");
    } catch (error) {
       log.error("Error sending email:", error.response.data);
       throw error; // Optionally re-throw the error if you want to handle it further up the call stack
@@ -246,5 +196,4 @@ module.exports = {
    getTeamId,
    getOwners,
    notifyUserAndTeam,
-   sendHtmlReport,
 };

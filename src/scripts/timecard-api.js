@@ -63,6 +63,7 @@ async function getTimeCardById(userId, teamId, timeCardId) {
 async function clockIn(userId, teamId) {
    const accessToken = await getAccessToken();
    try {
+      log.info("Attempting to clock in...");
       const response = await axios.post(
          `https://graph.microsoft.com/beta/teams/${teamId}/schedule/timeCards/clockIn`,
          {}, // empty body
@@ -73,6 +74,7 @@ async function clockIn(userId, teamId) {
             },
          }
       );
+      log.info("Successfully clocked in.");
       return response.data;
    } catch (error) {
       log.error("Error clocking in:", error);
@@ -83,6 +85,7 @@ async function clockIn(userId, teamId) {
 async function clockOut(userId, teamId, timeCardId) {
    const accessToken = await getAccessToken();
    try {
+      log.info("Attempting to clock out...");
       await axios.post(
          `https://graph.microsoft.com/beta/teams/${teamId}/schedule/timeCards/${timeCardId}/clockOut`,
          {}, // empty body
@@ -93,6 +96,7 @@ async function clockOut(userId, teamId, timeCardId) {
             },
          }
       );
+      log.info("Successfully clocked out.");
    } catch (error) {
       log.error("Error clocking out:", error);
       throw error;
@@ -102,6 +106,7 @@ async function clockOut(userId, teamId, timeCardId) {
 async function startBreak(userId, teamId, timeCardId) {
    const accessToken = await getAccessToken();
    try {
+      log.info("Attempting to start break...");
       const response = await axios.post(
          `https://graph.microsoft.com/beta/teams/${teamId}/schedule/timeCards/${timeCardId}/startBreak`,
          {}, // empty body
@@ -112,6 +117,7 @@ async function startBreak(userId, teamId, timeCardId) {
             },
          }
       );
+      log.info("Successfully started break.");
       return response.data;
    } catch (error) {
       log.error("Error starting break:", error);
@@ -122,6 +128,7 @@ async function startBreak(userId, teamId, timeCardId) {
 async function endBreak(userId, teamId, timeCardId) {
    const accessToken = await getAccessToken();
    try {
+      log.info("Attempting to end break...");
       const response = await axios.post(
          `https://graph.microsoft.com/beta/teams/${teamId}/schedule/timeCards/${timeCardId}/endBreak`,
          {}, // empty body
@@ -132,6 +139,7 @@ async function endBreak(userId, teamId, timeCardId) {
             },
          }
       );
+      log.info("Successfully ended break.");
       return response.data;
    } catch (error) {
       log.error("Error ending break:", error);
