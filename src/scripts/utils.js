@@ -1,5 +1,6 @@
 const { exec } = require("child_process");
 const os = require("os");
+const moment = require("moment-timezone");
 
 function calculateDuration(breakStartTime, breakEndTime) {
    const durationMs = new Date(breakEndTime) - new Date(breakStartTime);
@@ -76,5 +77,9 @@ function convertMsToHrsMinsSecs(ms) {
    }${seconds > 0 ? `${seconds} secs` : ""}`.trim();
 }
 
+function getTimezoneAbbreviation() {
+   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+   return moment.tz(timeZone).format("z");
+}
 
-module.exports = { calculateDuration, calculateBreakMins, isTeamsRunning, calculateActiveDuration, convertMsToHrsMinsSecs };
+module.exports = { calculateDuration, calculateBreakMins, isTeamsRunning, calculateActiveDuration, convertMsToHrsMinsSecs, getTimezoneAbbreviation };

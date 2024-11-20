@@ -11,14 +11,14 @@ ipcRenderer.on("validationMessage", (event, message) => {
 document.getElementById('teamName').addEventListener('input', (event) => {
     event.preventDefault();
     const email = document.getElementById('email').value;
-    const teamName = document.getElementById('teamName').value;   
+    const teamName = document.getElementById('teamName').value.trim();   
     ipcRenderer.send('validate-user-details', { email, teamName });
 });
 
 document.getElementById('userForm').addEventListener('submit', (event) => {
     event.preventDefault();
     const email = document.getElementById('email').value;
-    const teamName = document.getElementById('teamName').value;
+    const teamName = document.getElementById('teamName').value.trim();
     // Log details for debugging
     // console.log('Form submitted with:', { email, teamName });
 

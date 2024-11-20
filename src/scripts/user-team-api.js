@@ -48,13 +48,12 @@ async function getUsername(userId) {
    }
 }
 
-async function getTeams()
-{
+async function getTeams(userId) {
    const accessToken = await getAccessToken();
 
    try {
       let teams = [];
-      let url = `https://graph.microsoft.com/v1.0/teams?$select=id,displayName`;
+      let url = `https://graph.microsoft.com/v1.0/users/${userId}/joinedTeams?$select=id,displayName`;
 
       while (url) {
          const response = await axios.get(url, {

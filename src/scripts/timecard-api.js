@@ -1,7 +1,12 @@
+const { app } = require("electron");
 const axios = require("axios");
 const getAccessToken = require("./ms-auth").getAccessToken;
 const log = require("electron-log");
-const { calculateDuration, calculateActiveDuration } = require("./utils");
+const {
+   calculateDuration,
+   calculateActiveDuration,
+   getTimezoneAbbreviation,
+} = require("./utils");
 
 async function getLatestSession(userId, teamId) {
    const accessToken = await getAccessToken();
@@ -190,6 +195,7 @@ function generateClockInEmail(name, email, teamName, clockInTime) {
                width: auto;
                max-width: 500px;
                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+               box-sizing: border-box;
                text-align: left;
          }
          .message-title {
@@ -210,6 +216,12 @@ function generateClockInEmail(name, email, teamName, clockInTime) {
                font-size: 1.1em;
                color: #333;
          }
+         i {
+            font-size: 12px;
+            color: #777;
+            display: block;
+            margin-top: 20px; /* More space between the main message and the footer */
+         }
          @media (prefers-color-scheme: dark) {
             body {
                --background-color: rgb(46,46,46);
@@ -229,7 +241,8 @@ function generateClockInEmail(name, email, teamName, clockInTime) {
          <div class="message-title">Clock-in Notification</div>
          <div class="user-email">User: <span>${name} (${email})</span></div>
          <div class="team-name">Team: <span>${teamName}</span></div>
-         <div class="clock-in-time">Clocked in at: <span>${clockInTime}</span></div>
+         <div class="clock-in-time">Clocked in at: <span>${clockInTime} (${getTimezoneAbbreviation()})</span></div>
+         <i>This is an automated email from the AutoTimeClock v${app.getVersion()}</i>
       </div>
    </body>
    </html>
@@ -276,8 +289,8 @@ function generateSummaryEmail(name, email, teamName, timeCard) {
          (breakItem, index) => `
        <tr>
          <td>Break ${index + 1}</td>
-         <td>${breakItem.start}</td>
-         <td>${breakItem.end}</td>
+         <td>${breakItem.start} (${getTimezoneAbbreviation()})</td>
+         <td>${breakItem.end} (${getTimezoneAbbreviation()})</td>
          <td>${breakItem.duration}</td>
        </tr>
      `
@@ -315,14 +328,14 @@ function generateSummaryEmail(name, email, teamName, timeCard) {
            <th>Total Duration</th>
          </tr>
          <tr>
-           <td>${clockInTime}</td>
-           <td>${clockOutTime}</td>
+           <td>${clockInTime} (${getTimezoneAbbreviation()})</td>
+           <td>${clockOutTime} (${getTimezoneAbbreviation()})</td>
            <td>${activeDuration}</td>
            <td>${totalDuration}</td>
          </tr>
        </table>
        ${breaksTable} <!-- Only shows the breaks table if there are breaks -->
-       <i style="font-size: 12px; color: #777;">This is an automated email from the AutoTimeClock app.</i>
+       <i style="font-size: 12px; color: #777;">This is an automated email from the AutoTimeClock v${app.getVersion()}</i>
      </body>
    </html>
  `;

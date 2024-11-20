@@ -163,12 +163,15 @@ if (!gotTheLock) {
          mainWindow = createWindow(450, 300); // Default size for email-input
          log.info("Displaying user configuration page...");
          mainWindow.loadFile("./src/pages/user-config.html");
+         let userId;
 
          ipcMain.on("validate-user-details", async (event, userDetails) => {
+            userId = await getUserId(userDetails.email);
             let teams = store.get("teams");
+            teams = teams && teams.userId === userId ? teams.teams : null;
             if (!teams) {
-               teams = await getTeams();
-               store.set("teams", teams);
+               teams = await getTeams(userId);
+               store.set("teams", { userId, teams });
             }
             if (
                teams.some((team) => team.displayName === userDetails.teamName)
@@ -192,12 +195,6 @@ if (!gotTheLock) {
             store.set("user-config", userDetails);
             userConfig = userDetails;
             await authenticateEmail();
-            let userId = await getUserId(userConfig.email).catch(
-               async (error) => {
-                  log.error("An error has occurred, relaunching the app...");
-                  relaunchApp();
-               }
-            );
             let teamId = await getTeamId(userId, userConfig.teamName).catch(
                async (error) => {
                   log.error("An error has occurred, relaunching the app...");
@@ -271,9 +268,9 @@ if (!gotTheLock) {
 
    // Function to start the main loop
    async function startMainLoop() {
-      if(isMainLoopActive) return;
+      if (isMainLoopActive) return;
       isMainLoopActive = true;
-      
+
       const { email, teamName } = store.get("user-config") || {};
       let { userId, teamId } = store.get("user-ids") || {};
       let { owners } = store.get("owners") || {};
