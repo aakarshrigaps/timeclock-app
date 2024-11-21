@@ -25,6 +25,7 @@ const {
    startBreak,
    endBreak,
    getPresence,
+   updateTimeCard,
    generateClockInEmail,
    generateSummaryEmail,
 } = require("./scripts/timecard-api");
@@ -100,11 +101,23 @@ if (!gotTheLock) {
       }, 2 * 60 * 60 * 1000); // Check for updates every 2 hours
 
       process.on("unhandledRejection", (error) => {
-         log.error("Unhandled promise rejection:", error);
+         log.error("Unhandled promise rejection:", {
+            statusCode: error.response?.status,
+            method: error.config.method,
+            url: error.config.url,
+            errorMessage: error.message,
+            responseData: error.response?.data,
+         });
       });
 
       process.on("uncaughtException", (error) => {
-         log.error("Uncaught exception:", error);
+         log.error("Uncaught exception:", {
+            statusCode: error.response?.status,
+            method: error.config.method,
+            url: error.config.url,
+            errorMessage: error.message,
+            responseData: error.response?.data,
+         });
       });
 
       powerSaveId = powerSaveBlocker.start("prevent-app-suspension");
@@ -119,36 +132,60 @@ if (!gotTheLock) {
 
       powerMonitor.on("suspend", () => {
          log.info(
-            "System is going to sleep. Starting a break and keeping the app running in the background..."
+            "System is going to sleep. Stopping the app to prevent data loss..."
          );
-         (async () => {
-            let timecard = await getLatestSession(
-               userIds.userId,
-               userIds.teamId
-            ).catch(async (error) => {
-               log.error("An error has occurred, relaunching the app...");
-               relaunchApp();
-            });
-            log.info("Latest timecard state:", timecard);
-            //TODO: fix this break issue later
-            if (timecard.state === "clockedIn") {
-               await startBreak(
-                  userIds.userId,
-                  userIds.teamId,
-                  timecard.id
-               ).catch(async (error) => {
-                  log.error("An error has occurred, relaunching the app...");
-                  relaunchApp();
-               });
-               log.info("Break started successfully.");
-            }
-         })();
-         // powerSaveBlocker.stop(powerSaveId);
+         store.set("break-start-time", new Date().toISOString());
+         if (powerSaveId) {
+            powerSaveBlocker.stop(powerSaveId);
+            powerSaveId = null;
+         }
       });
 
       powerMonitor.on("resume", () => {
-         log.info("System resumed from sleep. Relaunching the app...");
-         relaunchApp();
+         log.info(
+            "System resumed from sleep. Updating timecard with break if clockedIn..."
+         );
+         powerSaveId = powerSaveBlocker.start("prevent-app-suspension");
+         //break addition when system resumes
+         let breakStartTime = store.get("break-start-time");
+         let breakEndTime = new Date().toISOString();
+         let { userId, teamId } = store.get("user-ids");
+         let timeCard = store.get("latest-time-card").latestTimeCard;
+         let breakBody = {
+            start: {
+               dateTime: breakStartTime,
+            },
+            end: {
+               dateTime: breakEndTime,
+            },
+         };
+         if (
+            timeCard.state === "clockedIn" &&
+            !timeCard.breaks.some(
+               (b) =>
+                  b.start.dateTime === breakBody.start.dateTime &&
+                  b.end.dateTime === breakBody.end.dateTime
+            )
+         ) {
+            timeCard.breaks.push(breakBody);
+            (async () => {
+               await updateTimeCard(userId, teamId, timeCard.id, timeCard)
+                  .catch(async (error) => {
+                     log.error("Error updating timecard", {
+                        statusCode: error.response?.status,
+                        method: error.config.method,
+                        url: error.config.url,
+                        errorMessage: error.message,
+                        responseData: error.response?.data,
+                        callstack: error.stack,
+                     });
+                  })
+                  .finally(() => {
+                     relaunchApp();
+                     store.delete("break-start-time");
+                  });
+            })();
+         }
       });
 
       if (
@@ -506,7 +543,14 @@ if (!gotTheLock) {
          );
          return timeCard;
       } catch (error) {
-         log.error("Error while clocking in", error);
+         log.error("Error while clocking in", {
+            statusCode: error.response?.status,
+            method: error.config.method,
+            url: error.config.url,
+            errorMessage: error.message,
+            responseData: error.response?.data,
+            callstack: error.stack,
+         });
          relaunchApp();
       }
    }

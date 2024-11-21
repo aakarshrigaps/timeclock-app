@@ -17,10 +17,14 @@ async function getUserId(email) {
 
       return response.data.id;
    } catch (error) {
-      log.error(
-         "Error fetching user ID:",
-         error.response ? error.response.data : error.message
-      );
+      log.error("Error fetching user ID:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -68,10 +72,14 @@ async function getTeams(userId) {
 
       return teams;
    } catch (error) {
-      log.error(
-         "Error fetching teams:",
-         error.response ? error.response.data : error.message
-      );
+      log.error("Error fetching teams:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -93,10 +101,14 @@ async function getTeamId(userId, teamName) {
       const team = teams.find((team) => team.displayName === teamName);
       return team ? team.id : null;
    } catch (error) {
-      log.error(
-         "Error fetching team ID:",
-         error.response ? error.response.data : error.message
-      );
+      log.error("Error fetching team ID:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -121,10 +133,14 @@ async function getOwners(teamId) {
          return [];
       }
    } catch (error) {
-      log.error(
-         "Error fetching owners:",
-         error.response ? error.response.data : error.message
-      );
+      log.error("Error fetching owners:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -183,7 +199,14 @@ async function notifyUserAndTeam(
       );
       log.info("Email sent successfully.");
    } catch (error) {
-      log.error("Error sending email:", error.response.data);
+      log.error("Error sending email:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error; // Optionally re-throw the error if you want to handle it further up the call stack
    }
 }

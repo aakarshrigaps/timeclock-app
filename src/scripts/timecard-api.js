@@ -40,7 +40,14 @@ async function getLatestSession(userId, teamId) {
          .find((timeCard) => timeCard.userId === userId);
       return latestSession;
    } catch (error) {
-      log.error("Error fetching the latest session:", error);
+      log.error("Error fetching the latest session:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -60,7 +67,14 @@ async function getTimeCardById(userId, teamId, timeCardId) {
       );
       return response.data;
    } catch (error) {
-      log.error("Error fetching time card by ID:", error);
+      log.error("Error fetching time card by ID:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -82,7 +96,14 @@ async function clockIn(userId, teamId) {
       log.info("Successfully clocked in.");
       return response.data;
    } catch (error) {
-      log.error("Error clocking in:", error);
+      log.error("Error clocking in:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -103,7 +124,14 @@ async function clockOut(userId, teamId, timeCardId) {
       );
       log.info("Successfully clocked out.");
    } catch (error) {
-      log.error("Error clocking out:", error);
+      log.error("Error clocking out:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -125,7 +153,14 @@ async function startBreak(userId, teamId, timeCardId) {
       log.info("Successfully started break.");
       return response.data;
    } catch (error) {
-      log.error("Error starting break:", error);
+      log.error("Error starting break:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -147,7 +182,14 @@ async function endBreak(userId, teamId, timeCardId) {
       log.info("Successfully ended break.");
       return response.data;
    } catch (error) {
-      log.error("Error ending break:", error);
+      log.error("Error ending break:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -165,7 +207,42 @@ async function getPresence(userId) {
       );
       return response.data;
    } catch (error) {
-      log.error("Error fetching presence:", error);
+      log.error("Error fetching presence:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
+      throw error;
+   }
+}
+
+async function updateTimeCard(userId, teamId, timeCardId, body) {
+   const accessToken = await getAccessToken();
+   try {
+      const response = await axios.put(
+         `https://graph.microsoft.com/beta/teams/${teamId}/schedule/timeCards/${timeCardId}`,
+         body,
+         {
+            headers: {
+               Authorization: `Bearer ${accessToken}`,
+               "MS-APP-ACTS-AS": userId,
+            },
+         }
+      );
+      log.info("Successfully updated time card.");
+      return response.data;
+   } catch (error) {
+      log.error("Error updating time card:", {
+         statusCode: error.response?.status,
+         method: error.config.method,
+         url: error.config.url,
+         errorMessage: error.message,
+         responseData: error.response?.data,
+         callstack: error.stack,
+      });
       throw error;
    }
 }
@@ -349,6 +426,7 @@ module.exports = {
    startBreak,
    endBreak,
    getPresence,
+   updateTimeCard,
    generateClockInEmail,
    generateSummaryEmail,
 };
