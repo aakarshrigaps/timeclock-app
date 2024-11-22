@@ -49,6 +49,13 @@ app.on("window-all-closed", (event) => {
 
 autoUpdater.on("update-downloaded", () => {
    log.info("Update downloaded, restarting the app...");
+   if (mainWindow && !mainWindow.isDestroyed()) {
+      // remove overlay after update downloaded
+      mainWindow.webContents.executeJavaScript(`
+         const overlay = document.getElementById('update-overlay');
+         if (overlay) overlay.remove();
+     `);
+   }
    autoUpdater.quitAndInstall();
 });
 
@@ -58,6 +65,28 @@ autoUpdater.on("checking-for-update", () => {
 
 autoUpdater.on("update-available", () => {
    log.info("Update available, downloading...");
+
+   if (mainWindow && !mainWindow.isDestroyed()) {
+      // Path to the external HTML file
+      const overlayFilePath = path.join(
+         __dirname,
+         "pages",
+         "update-overlay.html"
+      );
+
+      // Read the HTML file
+      fs.readFile(overlayFilePath, "utf-8", (err, data) => {
+         if (err) {
+            log.error("Failed to load update overlay HTML:", err);
+            return;
+         }
+
+         // Inject the HTML into the renderer process
+         mainWindow.webContents.executeJavaScript(`
+              document.body.insertAdjacentHTML('beforeend', \`${data}\`);
+          `);
+      });
+   }
 });
 
 autoUpdater.on("update-not-available", () => {
@@ -66,8 +95,20 @@ autoUpdater.on("update-not-available", () => {
 
 autoUpdater.on("download-progress", (progress) => {
    log.info("Download progress:", progress.percent.toFixed(2) + "%");
-});
 
+   if (mainWindow && !mainWindow.isDestroyed()) {
+      // Update progress bar and text
+      const percentage = progress.percent.toFixed(2);
+      mainWindow.webContents.executeJavaScript(`
+           const progressFill = document.getElementById('progress-fill');
+           const progressText = document.getElementById('progress-text');
+           if (progressFill && progressText) {
+               progressFill.style.width = '${percentage}%';
+               progressText.textContent = '${percentage}% completed';
+           }
+       `);
+   }
+});
 function relaunchApp() {
    app.relaunch();
    app.exit();
