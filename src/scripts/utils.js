@@ -55,7 +55,8 @@ async function isTeamsRunning() {
 }
 
 function calculateActiveDuration(clockIn, clockOut, breakDurationMs) {
-   const activeDurationMs = new Date(clockOut) - new Date(clockIn) - breakDurationMs;
+   const activeDurationMs =
+      new Date(clockOut) - new Date(clockIn) - breakDurationMs;
    const activeDurationHrs = Math.floor(activeDurationMs / 3600000);
    const activeDurationMins = Math.floor((activeDurationMs % 3600000) / 60000);
    const activeDurationSecs = Math.floor((activeDurationMs % 60000) / 1000);
@@ -82,4 +83,26 @@ function getTimezoneAbbreviation() {
    return moment.tz(timeZone).format("z");
 }
 
-module.exports = { calculateDuration, calculateBreakMins, isTeamsRunning, calculateActiveDuration, convertMsToHrsMinsSecs, getTimezoneAbbreviation };
+async function checkInternetConnection() {
+   try {
+      const response = await fetch("https://www.google.com/", {
+         method: "HEAD",
+         mode: "no-cors",
+      });
+      // If we get here, it means the fetch was successful
+      return true;
+   } catch (error) {
+      // An error occurred, indicating no connection
+      return false;
+   }
+}
+
+module.exports = {
+   calculateDuration,
+   calculateBreakMins,
+   isTeamsRunning,
+   calculateActiveDuration,
+   convertMsToHrsMinsSecs,
+   getTimezoneAbbreviation,
+   checkInternetConnection,
+};

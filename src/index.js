@@ -28,7 +28,7 @@ const {
    generateClockInEmail,
    generateSummaryEmail,
 } = require("./scripts/timecard-api");
-const { isTeamsRunning } = require("./scripts/utils");
+const { isTeamsRunning, checkInternetConnection } = require("./scripts/utils");
 const { autoUpdater } = require("electron-updater");
 
 let isPromptOpen = false;
@@ -89,8 +89,13 @@ if (!gotTheLock) {
 
    app.on("ready", async () => {
       log.info("App started. Version:", app.getVersion());
-      autoUpdater.checkForUpdatesAndNotify();
+      while (!(await checkInternetConnection())) {
+         log.info("No internet connection. Retrying...");
+         await new Promise((resolve) => setTimeout(resolve, 5000)); // Retry after 5 seconds
+      }
+      log.info("Internet connection available. Proceeding...");
 
+      autoUpdater.checkForUpdatesAndNotify();
       setInterval(() => {
          autoUpdater.checkForUpdatesAndNotify();
       }, 2 * 60 * 60 * 1000); // Check for updates every 2 hours
@@ -142,13 +147,22 @@ if (!gotTheLock) {
          }
       });
 
-      powerMonitor.on("resume", () => {
+      powerMonitor.on("resume", async () => {
          log.info(
             "System resumed from sleep. Updating timecard with break if clockedIn..."
          );
          powerSaveId = powerSaveBlocker.start("prevent-app-suspension");
          //break addition when system resumes
          let breakStartTime = store.get("break-start-time");
+
+         // Wait until internet connection is available
+         while (!(await checkInternetConnection())) {
+            log.info("No internet connection. Retrying...");
+            await new Promise((resolve) => setTimeout(resolve, 5000)); // Retry after 5 seconds
+         }
+         log.info("Internet connection available. Proceeding with update...");
+
+         // Capture the break end time after reconnection
          let breakEndTime = new Date().toISOString();
          let { userId, teamId } = store.get("user-ids");
          let timeCard = store.get("latest-time-card").latestTimeCard;
@@ -169,25 +183,23 @@ if (!gotTheLock) {
             )
          ) {
             timeCard.breaks.push(breakBody);
-            (async () => {
-               await updateTimeCard(userId, teamId, timeCard.id, timeCard)
-                  .catch(async (error) => {
-                     log.error("Error updating timecard", {
-                        statusCode: error.response?.status,
-                        method: error.config.method,
-                        url: error.config.url,
-                        errorMessage: error.message,
-                        requestData: error.config.data,
-                        requestHeaders: error.config.headers,
-                        responseData: error.response?.data,
-                        callstack: error.stack,
-                     });
-                  })
-                  .finally(() => {
-                     relaunchApp();
-                     store.delete("break-start-time");
+            await updateTimeCard(userId, teamId, timeCard.id, timeCard)
+               .catch(async (error) => {
+                  log.error("Error updating timecard", {
+                     statusCode: error.response?.status,
+                     method: error.config.method,
+                     url: error.config.url,
+                     errorMessage: error.message,
+                     requestData: error.config.data,
+                     requestHeaders: error.config.headers,
+                     responseData: error.response?.data,
+                     callstack: error.stack,
                   });
-            })();
+               })
+               .finally(() => {
+                  relaunchApp();
+                  store.delete("break-start-time");
+               });
          }
       });
 
