@@ -22,6 +22,8 @@ async function getUserId(email) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -77,6 +79,8 @@ async function getTeams(userId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -106,6 +110,8 @@ async function getTeamId(userId, teamName) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -138,6 +144,8 @@ async function getOwners(teamId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -204,6 +212,8 @@ async function notifyUserAndTeam(
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });

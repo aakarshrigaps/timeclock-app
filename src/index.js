@@ -2,7 +2,6 @@ const {
    app,
    BrowserWindow,
    ipcMain,
-   contextBridge,
    powerMonitor,
    powerSaveBlocker,
 } = require("electron");
@@ -29,11 +28,7 @@ const {
    generateClockInEmail,
    generateSummaryEmail,
 } = require("./scripts/timecard-api");
-const {
-   calculateDuration,
-   calculateBreakMins,
-   isTeamsRunning,
-} = require("./scripts/utils");
+const { isTeamsRunning } = require("./scripts/utils");
 const { autoUpdater } = require("electron-updater");
 
 let isPromptOpen = false;
@@ -106,7 +101,10 @@ if (!gotTheLock) {
             method: error.config.method,
             url: error.config.url,
             errorMessage: error.message,
+            requestData: error.config.data,
+            requestHeaders: error.config.headers,
             responseData: error.response?.data,
+            callStack: error.stack,
          });
       });
 
@@ -116,7 +114,10 @@ if (!gotTheLock) {
             method: error.config.method,
             url: error.config.url,
             errorMessage: error.message,
+            requestData: error.config.data,
+            requestHeaders: error.config.headers,
             responseData: error.response?.data,
+            callStack: error.stack,
          });
       });
 
@@ -176,6 +177,8 @@ if (!gotTheLock) {
                         method: error.config.method,
                         url: error.config.url,
                         errorMessage: error.message,
+                        requestData: error.config.data,
+                        requestHeaders: error.config.headers,
                         responseData: error.response?.data,
                         callstack: error.stack,
                      });
@@ -548,6 +551,8 @@ if (!gotTheLock) {
             method: error.config.method,
             url: error.config.url,
             errorMessage: error.message,
+            requestData: error.config.data,
+            requestHeaders: error.config.headers,
             responseData: error.response?.data,
             callstack: error.stack,
          });

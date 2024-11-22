@@ -45,6 +45,8 @@ async function getLatestSession(userId, teamId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -72,6 +74,8 @@ async function getTimeCardById(userId, teamId, timeCardId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -101,6 +105,8 @@ async function clockIn(userId, teamId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -129,6 +135,8 @@ async function clockOut(userId, teamId, timeCardId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -158,6 +166,8 @@ async function startBreak(userId, teamId, timeCardId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -187,6 +197,8 @@ async function endBreak(userId, teamId, timeCardId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -212,6 +224,8 @@ async function getPresence(userId) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
@@ -240,6 +254,8 @@ async function updateTimeCard(userId, teamId, timeCardId, body) {
          method: error.config.method,
          url: error.config.url,
          errorMessage: error.message,
+         requestData: error.config.data,
+         requestHeaders: error.config.headers,
          responseData: error.response?.data,
          callstack: error.stack,
       });
