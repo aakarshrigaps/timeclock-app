@@ -405,7 +405,8 @@ if (!gotTheLock) {
 
          if (
             (userStatus.availability === "Away" ||
-               userStatus.availability === "BeRightBack") &&
+               userStatus.availability === "BeRightBack" ||
+               userStatus.availability === "AvailableIdle") &&
             state === "clockedIn"
          ) {
             let clockInData = store.get("latest-time-card");
@@ -418,6 +419,7 @@ if (!gotTheLock) {
          } else if (
             userStatus.availability !== "Away" &&
             userStatus.availability !== "BeRightBack" &&
+            userStatus.availability !== "AvailableIdle" &&
             state === "onBreak"
          ) {
             await endBreak(userId, teamId, timeCardId).catch(async (error) => {
