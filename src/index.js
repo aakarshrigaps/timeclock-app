@@ -611,11 +611,13 @@ if (!gotTheLock) {
       return new BrowserWindow({
          width: width,
          height: height,
+         title: "AutoTimeClock",
          roundedCorners: true,
          webPreferences: {
             preload: path.join(__dirname, "scripts", "preload.js"),
             contextIsolation: true,
             nodeIntegration: true,
+            devTools: app.isPackaged ? false : true,
          },
          alwaysOnTop: true,
          autoHideMenuBar: true,
