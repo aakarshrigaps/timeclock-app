@@ -28,7 +28,10 @@ const {
    generateClockInEmail,
    generateSummaryEmail,
 } = require("./scripts/timecard-api");
-const { isTeamsRunning, checkInternetConnection } = require("./scripts/utils");
+const {
+   isTeamsRunning,
+   waitForInternetConnection,
+} = require("./scripts/utils");
 const { autoUpdater } = require("electron-updater");
 
 let isPromptOpen = false;
@@ -89,11 +92,7 @@ if (!gotTheLock) {
 
    app.on("ready", async () => {
       log.info("App started. Version:", app.getVersion());
-      while (!(await checkInternetConnection())) {
-         log.info("No internet connection. Retrying...");
-         await new Promise((resolve) => setTimeout(resolve, 5000)); // Retry after 5 seconds
-      }
-      log.info("Internet connection available. Proceeding...");
+      await waitForInternetConnection();
 
       autoUpdater.checkForUpdatesAndNotify();
       setInterval(() => {
@@ -101,29 +100,13 @@ if (!gotTheLock) {
       }, 2 * 60 * 60 * 1000); // Check for updates every 2 hours
 
       process.on("unhandledRejection", (error) => {
-         log.error("Unhandled promise rejection:", {
-            statusCode: error.response?.status,
-            method: error.config.method,
-            url: error.config.url,
-            errorMessage: error.message,
-            requestData: error.config.data,
-            requestHeaders: error.config.headers,
-            responseData: error.response?.data,
-            callStack: error.stack,
-         });
+         log.error("Unhandled promise rejection:", error);
+         relaunchApp();
       });
 
       process.on("uncaughtException", (error) => {
-         log.error("Uncaught exception:", {
-            statusCode: error.response?.status,
-            method: error.config.method,
-            url: error.config.url,
-            errorMessage: error.message,
-            requestData: error.config.data,
-            requestHeaders: error.config.headers,
-            responseData: error.response?.data,
-            callStack: error.stack,
-         });
+         log.error("Uncaught exception:", error);
+         relaunchApp();
       });
 
       powerSaveId = powerSaveBlocker.start("prevent-app-suspension");
@@ -155,12 +138,7 @@ if (!gotTheLock) {
          //break addition when system resumes
          let breakStartTime = store.get("break-start-time");
 
-         // Wait until internet connection is available
-         while (!(await checkInternetConnection())) {
-            log.info("No internet connection. Retrying...");
-            await new Promise((resolve) => setTimeout(resolve, 5000)); // Retry after 5 seconds
-         }
-         log.info("Internet connection available. Proceeding with update...");
+         await waitForInternetConnection();
 
          // Capture the break end time after reconnection
          let breakEndTime = new Date().toISOString();
@@ -200,6 +178,8 @@ if (!gotTheLock) {
                   relaunchApp();
                   store.delete("break-start-time");
                });
+         } else {
+            store.delete("break-start-time");
          }
       });
 
@@ -268,8 +248,6 @@ if (!gotTheLock) {
          // Generate a random OTP
          const otp = crypto.randomInt(100000, 999999).toString();
 
-         // Save the OTP to the store
-         store.set("otp", otp);
          const userConfig = store.get("user-config");
 
          const transporter = nodemailer.createTransport({
@@ -301,10 +279,7 @@ if (!gotTheLock) {
          mainWindow.loadFile("./src/pages/verify-otp.html");
 
          ipcMain.on("verify-otp", (event, enteredOtp) => {
-            const storedOtp = store.get("otp");
-            if (enteredOtp === storedOtp) {
-               // console.log("OTP verified successfully.");
-               store.delete("otp"); // Clear the OTP from the store
+            if (enteredOtp === otp) {
                if (mainWindow) mainWindow.close();
                resolve(); // Resolve the promise when OTP is verified and window is closed
             } else {

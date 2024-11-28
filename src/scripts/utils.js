@@ -1,6 +1,8 @@
 const { exec } = require("child_process");
 const os = require("os");
 const moment = require("moment-timezone");
+const dns = require("dns");
+const log = require("electron-log");
 
 function calculateDuration(breakStartTime, breakEndTime) {
    const durationMs = new Date(breakEndTime) - new Date(breakStartTime);
@@ -83,18 +85,22 @@ function getTimezoneAbbreviation() {
    return moment.tz(timeZone).format("z");
 }
 
-async function checkInternetConnection() {
-   try {
-      const response = await fetch("https://www.google.com/", {
-         method: "HEAD",
-         mode: "no-cors",
-      });
-      // If we get here, it means the fetch was successful
-      return true;
-   } catch (error) {
-      // An error occurred, indicating no connection
-      return false;
+async function waitForInternetConnection() {
+   while (true) {
+      const isConnected = await checkInternetConnection();
+      if (isConnected) {
+         log.info("Internet connection available. Proceeding with update...");
+         break; // Exit the loop when internet connection is available
+      }
+      log.info("No internet connection. Retrying in 5 seconds...");
+      await new Promise((resolve) => setTimeout(resolve, 5000)); // Retry after 5 seconds
    }
+}
+
+async function checkInternetConnection() {
+   return new Promise((resolve) => {
+      dns.lookup("google.com", (err) => resolve(!err)); // Resolves to true if DNS lookup succeeds
+   });
 }
 
 module.exports = {
@@ -104,5 +110,5 @@ module.exports = {
    calculateActiveDuration,
    convertMsToHrsMinsSecs,
    getTimezoneAbbreviation,
-   checkInternetConnection,
+   waitForInternetConnection,
 };
