@@ -33,6 +33,15 @@ const {
    waitForInternetConnection,
 } = require("./scripts/utils");
 const { autoUpdater } = require("electron-updater");
+const {
+   getDefaultSiteId,
+   getListId,
+   updateSharePointList,
+   getSharePointListItemId,
+   sendDataToSharePointList,
+   updateDataSharePointList,
+} = require("./scripts/sharepoint-api");
+const { get } = require("http");
 
 let isPromptOpen = false;
 let isReminderOpen = false;
@@ -50,6 +59,7 @@ app.on("window-all-closed", (event) => {
    event.preventDefault(); // Prevent the default behavior of quitting the app
 });
 
+//#region AutoUpdater
 autoUpdater.on("update-downloaded", () => {
    log.info("Update downloaded, restarting the app...");
    autoUpdater.quitAndInstall();
@@ -70,6 +80,7 @@ autoUpdater.on("update-not-available", () => {
 autoUpdater.on("download-progress", (progress) => {
    log.info("Download progress:", progress.percent.toFixed(2) + "%");
 });
+//#endregion
 
 function relaunchApp() {
    app.relaunch();
@@ -81,6 +92,7 @@ if (!gotTheLock) {
    app.quit();
 } else {
    // If the lock is acquired, set up the event listener for second instances
+   //#region Second Instance
    app.on("second-instance", () => {
       log.info("An instance of the app is already running.");
       // When another instance tries to run, this event will be triggered
@@ -89,7 +101,9 @@ if (!gotTheLock) {
          mainWindow.focus();
       }
    });
+   //#endregion
 
+   //#region App Ready
    app.on("ready", async () => {
       log.info("App started. Version:", app.getVersion());
       await waitForInternetConnection();
@@ -242,7 +256,9 @@ if (!gotTheLock) {
          startMainLoop();
       }
    });
+   //#endregion
 
+   //#region OTP Verification
    async function authenticateEmail() {
       return new Promise((resolve, reject) => {
          // Generate a random OTP
@@ -292,18 +308,42 @@ if (!gotTheLock) {
          });
       });
    }
+   //#endregion
 
-   // Function to start the main loop
+   // #region Main Loop
    async function startMainLoop() {
       if (isMainLoopActive) return;
       isMainLoopActive = true;
-
+      //#region Store data
       const { email, teamName } = store.get("user-config") || {};
       let { userId, teamId } = store.get("user-ids") || {};
       let { owners } = store.get("owners") || {};
       let username = store.get("username") || (await getUsername(email));
-      let userStatus = store.get("user-status") || {};
       store.set("username", username);
+      let userStatus = store.get("user-status") || {};
+      let sharepointSiteId =
+         store.get("sharepoint-data")?.siteId ||
+         (await getDefaultSiteId().catch(async (error) => {
+            log.error("An error has occurred, relaunching the app...");
+            relaunchApp();
+         }));
+      let sharepointListId =
+         store.get("sharepoint-data")?.listId ||
+         (await getListId(sharepointSiteId, "TimeCardLibrary"));
+      let sharePointListItemId = await getSharePointListItemId(
+         sharepointSiteId,
+         sharepointListId,
+         username
+      ).catch(async (error) => {
+         log.error("An error has occurred, relaunching the app...");
+         relaunchApp();
+      });
+
+      store.set("sharepoint-data", {
+         siteId: sharepointSiteId,
+         listId: sharepointListId,
+         listItemId: sharePointListItemId,
+      });
 
       if (!owners) {
          // console.log("Fetching team owners...");
@@ -313,7 +353,7 @@ if (!gotTheLock) {
          });
          store.set("owners", { owners });
       }
-
+      //#endregion
       const latestTimeCard = await getLatestSession(userId, teamId).catch(
          async (error) => {
             log.error("An error has occurred, relaunching the app...");
@@ -324,6 +364,7 @@ if (!gotTheLock) {
       let state = latestTimeCard?.state;
       store.set("latest-time-card", { latestTimeCard });
 
+      //#region Main Loop Logic
       if (await isTeamsRunning()) {
          if (state === "clockedOut" || state === "unknownFutureValue") {
             if (!isPromptOpen && !isReminderOpen && !isReminderLoopActive) {
@@ -435,10 +476,36 @@ if (!gotTheLock) {
       }
       let lastUpdated = new Date().toLocaleString();
       store.set("last-updated", lastUpdated);
-
+      if (!sharePointListItemId) {
+         await sendDataToSharePointList(
+            sharepointSiteId,
+            sharepointListId,
+            username,
+            teamName,
+            latestTimeCard,
+            userStatus,
+            lastUpdated
+         ).catch(async (error) => {
+            log.error("An error has occurred, relaunching the app...");
+            relaunchApp();
+         });
+      } else {
+         await updateDataSharePointList(
+            sharepointSiteId,
+            sharepointListId,
+            sharePointListItemId,
+            username,
+            teamName,
+            latestTimeCard,
+            userStatus,
+            lastUpdated
+         );
+      }
       isMainLoopActive = false;
-      setTimeout(startMainLoop, 6000); // Repeat every 6 seconds
+      setTimeout(startMainLoop, 8000); // Repeat every 8 seconds
+      //#endregion
    }
+   //#endregion
 
    async function updatePresence() {
       const { userId } = store.get("user-ids") || {};
