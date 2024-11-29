@@ -474,7 +474,7 @@ if (!gotTheLock) {
             });
          }
       }
-      let lastUpdated = new Date().toLocaleString();
+      let lastUpdated = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
       store.set("last-updated", lastUpdated);
       if (!sharePointListItemId) {
          await sendDataToSharePointList(
