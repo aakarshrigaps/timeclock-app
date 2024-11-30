@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.4] - 2024-11-30
+### 🚀 Additional Enhancements
+- **Duration columns in SharePoint List**: Added columns to the SharePoint list to store the total work duration and break duration for each user.
+
 ## [2.6.3] - 2024-11-30
 ### 🚀 Enhancements
 - **Added Inactivity Detection**: Implemented inactivity detection to automatically start and end breaks based on user activity.
