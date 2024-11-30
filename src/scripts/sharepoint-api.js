@@ -164,6 +164,23 @@ async function sendDataToSharePointList(
            }
         )
       : "⌛";
+
+   if (latestTimeCard.clockInEvent?.dateTime) {
+      const clockInDate = new Date(latestTimeCard.clockInEvent.dateTime)
+         .toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+         })
+         .split(",")[0];
+
+      if (clockInDate !== today) {
+         // log.info("Clock-in date is not today. Skipping data send.");
+         return;
+      }
+   }
+
    const clockOutTime = latestTimeCard.clockOutEvent?.dateTime
       ? new Date(latestTimeCard.clockOutEvent?.dateTime).toLocaleString(
            "en-IN",
@@ -305,6 +322,22 @@ async function updateDataSharePointList(
            }
         )
       : "⌛";
+
+   if (latestTimeCard.clockInEvent?.dateTime) {
+      const clockInDate = new Date(latestTimeCard.clockInEvent.dateTime)
+         .toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+         })
+         .split(",")[0];
+
+      if (clockInDate !== today) {
+         // log.info("Clock-in date is not today. Skipping data send.");
+         return;
+      }
+   }
    const clockOutTime = latestTimeCard.clockOutEvent?.dateTime
       ? new Date(latestTimeCard.clockOutEvent?.dateTime).toLocaleString(
            "en-IN",

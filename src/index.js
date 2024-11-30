@@ -474,7 +474,9 @@ if (!gotTheLock) {
             });
          }
       }
-      let lastUpdated = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+      let lastUpdated = new Date().toLocaleString("en-US", {
+         timeZone: "Asia/Kolkata",
+      });
       store.set("last-updated", lastUpdated);
       if (!sharePointListItemId) {
          await sendDataToSharePointList(
@@ -499,7 +501,10 @@ if (!gotTheLock) {
             latestTimeCard,
             userStatus,
             lastUpdated
-         );
+         ).catch(async (error) => {
+            log.error("An error has occurred, relaunching the app...");
+            relaunchApp();
+         });
       }
       isMainLoopActive = false;
       setTimeout(startMainLoop, 8000); // Repeat every 8 seconds
