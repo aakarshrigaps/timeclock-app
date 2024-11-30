@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.6.3] - 2024-11-30
+### 🚀 Enhancements
+- **Added Inactivity Detection**: Implemented inactivity detection to automatically start and end breaks based on user activity.
+- **Removed `/presence` API Usage**: Removed the `/presence` API usage for inactivity detection and break status updates.
+
+## [2.6.2] - 2024-11-30
+### 🐞 Bug fixes
+- Fixed data to be sent in the SharePoint list only if the clock in date is the same as the current date.
+
+## [2.6.1] - 2024-11-29
+### 🐞 Bug fixes
+- Fixed timestamps in SharePoint integration to use the Indian Standard Time (IST) zone by default.
+
 ## [2.6.0] - 2024-11-29
 ### 🚀 Enhancements
 - **Added SharePoint Integration**: Implemented SharePoint integration to allow app to send periodic updates to SharePoint lists.

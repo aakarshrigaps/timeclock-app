@@ -3,6 +3,7 @@ const os = require("os");
 const moment = require("moment-timezone");
 const dns = require("dns");
 const log = require("electron-log");
+const { powerMonitor } = require("electron");
 
 function calculateDuration(breakStartTime, breakEndTime) {
    const durationMs = new Date(breakEndTime) - new Date(breakStartTime);
@@ -103,6 +104,24 @@ async function checkInternetConnection() {
    });
 }
 
+function updateActivity() {
+   let store;
+   (async () => {
+      const Store = (await import("electron-store")).default;
+      store = new Store();
+   })();
+   const inactivityLimit = 5 * 60; // 5 minutes in seconds
+   // Poll system idle state periodically
+   setInterval(() => {
+      const idleTime = powerMonitor.getSystemIdleTime(); // Get idle time in seconds
+      if (idleTime >= inactivityLimit) {
+         store.set("user-active", false);
+      } else {
+         store.set("user-active", true);
+      }
+   }, 1000); // Check every second
+}
+
 module.exports = {
    calculateDuration,
    calculateBreakMins,
@@ -111,4 +130,5 @@ module.exports = {
    convertMsToHrsMinsSecs,
    getTimezoneAbbreviation,
    waitForInternetConnection,
+   updateActivity,
 };

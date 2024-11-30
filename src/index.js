@@ -31,6 +31,7 @@ const {
 const {
    isTeamsRunning,
    waitForInternetConnection,
+   updateActivity,
 } = require("./scripts/utils");
 const { autoUpdater } = require("electron-updater");
 const {
@@ -41,7 +42,6 @@ const {
    sendDataToSharePointList,
    updateDataSharePointList,
 } = require("./scripts/sharepoint-api");
-const { get } = require("http");
 
 let isPromptOpen = false;
 let isReminderOpen = false;
@@ -248,11 +248,11 @@ if (!gotTheLock) {
                }
             );
             store.set("user-ids", { userId, teamId });
-            updatePresence();
+            updateActivity();
             startMainLoop();
          });
       } else {
-         updatePresence();
+         updateActivity();
          startMainLoop();
       }
    });
@@ -320,7 +320,7 @@ if (!gotTheLock) {
       let { owners } = store.get("owners") || {};
       let username = store.get("username") || (await getUsername(email));
       store.set("username", username);
-      let userStatus = store.get("user-status") || {};
+      let userActive = store.get("user-active");
       let sharepointSiteId =
          store.get("sharepoint-data")?.siteId ||
          (await getDefaultSiteId().catch(async (error) => {
@@ -419,25 +419,14 @@ if (!gotTheLock) {
             }
          }
 
-         if (
-            (userStatus.availability === "Away" ||
-               userStatus.availability === "BeRightBack" ||
-               userStatus.availability === "AvailableIdle") &&
-            state === "clockedIn"
-         ) {
-            let clockInData = store.get("latest-time-card");
+         if (!userActive && state === "clockedIn") {
             await startBreak(userId, teamId, timeCardId).catch(
                async (error) => {
                   log.error("An error occurred, relaunching the app...");
                   relaunchApp();
                }
             );
-         } else if (
-            userStatus.availability !== "Away" &&
-            userStatus.availability !== "BeRightBack" &&
-            userStatus.availability !== "AvailableIdle" &&
-            state === "onBreak"
-         ) {
+         } else if (userActive && state === "onBreak") {
             await endBreak(userId, teamId, timeCardId).catch(async (error) => {
                log.error("An error has occurred, relaunching the app...");
                relaunchApp();
@@ -485,7 +474,6 @@ if (!gotTheLock) {
             username,
             teamName,
             latestTimeCard,
-            userStatus,
             lastUpdated
          ).catch(async (error) => {
             log.error("An error has occurred, relaunching the app...");
@@ -499,7 +487,6 @@ if (!gotTheLock) {
             username,
             teamName,
             latestTimeCard,
-            userStatus,
             lastUpdated
          ).catch(async (error) => {
             log.error("An error has occurred, relaunching the app...");
@@ -512,18 +499,7 @@ if (!gotTheLock) {
    }
    //#endregion
 
-   async function updatePresence() {
-      const { userId } = store.get("user-ids") || {};
-
-      const userStatus = await getPresence(userId).catch(async (error) => {
-         log.error("An error has occurred, relaunching the app...");
-         relaunchApp();
-      });
-      store.set("user-status", userStatus);
-
-      setTimeout(updatePresence, 60000); // Repeat every 1 minute
-   }
-
+   //#region reminder loop
    async function startReminderLoop(reminderTime) {
       let scheduleClockInPrompt = async () => {
          if (reminderWindow) reminderWindow.close();
@@ -576,7 +552,9 @@ if (!gotTheLock) {
 
       await scheduleClockInPrompt();
    }
+   //#endregion
 
+   //#region Clock In/Out Functions
    async function clockInSequence() {
       try {
          // console.log("Clocking In");
@@ -654,6 +632,7 @@ if (!gotTheLock) {
          [email]
       );
    }
+   //#endregion
 
    // Function to create a BrowserWindow with specific width and height
    function createWindow(width, height) {

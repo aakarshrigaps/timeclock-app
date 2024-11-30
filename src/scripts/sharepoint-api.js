@@ -137,11 +137,10 @@ async function sendDataToSharePointList(
    username,
    teamName,
    latestTimeCard,
-   userStatus,
    lastUpdated
 ) {
    const accessToken = await getAccessToken();
-   //#region Extracting data from latestTimeCard and userStatus
+   //#region Extracting data from latestTimeCard
    const today = new Date()
       .toLocaleString("en-IN", {
          timeZone: "Asia/Kolkata",
@@ -233,21 +232,6 @@ async function sendDataToSharePointList(
          ? "⏸️"
          : "❓";
 
-   const availabilityIcon =
-      userStatus.availability === "Available"
-         ? "🟢"
-         : userStatus.availability === "Busy" ||
-           userStatus.availability === "BusyIdle"
-         ? "🔴"
-         : userStatus.availability === "Away" ||
-           userStatus.availability === "BeRightBack" ||
-           userStatus.availability === "AvailableIdle"
-         ? "🟡"
-         : userStatus.availability === "DoNotDisturb"
-         ? "⛔"
-         : userStatus.availability === "Offline"
-         ? "⚪"
-         : "❓";
    //#endregion
    try {
       const payload = {
@@ -259,7 +243,6 @@ async function sendDataToSharePointList(
             ClockOut: clockOutTime,
             Breaks: breakData.join("\n"),
             State: stateIcon + latestTimeCard.state,
-            Availability: availabilityIcon + userStatus.availability,
             LastUpdated: lastUpdated,
          },
       };
@@ -294,7 +277,6 @@ async function updateDataSharePointList(
    username,
    teamName,
    latestTimeCard,
-   userStatus,
    lastUpdated
 ) {
    const accessToken = await getAccessToken();
@@ -389,22 +371,6 @@ async function updateDataSharePointList(
          : latestTimeCard.state === "onBreak"
          ? "⏸️"
          : "❓";
-   const availabilityIcon =
-      userStatus.availability === "Available"
-         ? "🟢"
-         : userStatus.availability === "Busy" ||
-           userStatus.availability === "BusyIdle"
-         ? "🔴"
-         : userStatus.availability === "Away" ||
-           userStatus.availability === "BeRightBack" ||
-           userStatus.availability === "AvailableIdle"
-         ? "🟡"
-         : userStatus.availability === "DoNotDisturb"
-         ? "⛔"
-         : userStatus.availability === "Offline"
-         ? "⚪"
-         : "❓";
-
    //#endregion
    try {
       const payload = {
@@ -416,7 +382,6 @@ async function updateDataSharePointList(
             ClockOut: clockOutTime,
             Breaks: breakData.join("\n"),
             State: stateIcon + latestTimeCard.state,
-            Availability: availabilityIcon + userStatus.availability,
             LastUpdated: lastUpdated,
          },
       };
