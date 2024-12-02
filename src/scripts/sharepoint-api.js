@@ -200,6 +200,17 @@ function getTimeCardPayload(latestTimeCard, username, teamName, lastUpdated) {
          }`
    );
 
+   const individualBreakDuration = latestTimeCard.breaks
+      .map((b) => {
+         const duration = b.end?.dateTime
+            ? convertMsToHrsMinsSecs(
+                 new Date(b.end.dateTime) - new Date(b.start.dateTime)
+              )
+            : "⌛";
+         return duration;
+      })
+      .join("\n");
+
    const breaksDuration = convertMsToHrsMinsSecs(
       latestTimeCard.breaks.reduce(
          (acc, b) =>
@@ -234,8 +245,9 @@ function getTimeCardPayload(latestTimeCard, username, teamName, lastUpdated) {
          ClockIn: clockInTime,
          ClockOut: clockOutTime,
          Breaks: breakData.join("\n"),
+         BreakDuration: individualBreakDuration,
          BreaksDuration: breaksDuration,
-         TotalDuration: totalDuration,
+         TotalDuration: totalDuration || "⌛",
          State: stateIcon + latestTimeCard.state,
          LastUpdated: lastUpdated,
       },
