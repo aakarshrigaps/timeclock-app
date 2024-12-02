@@ -5,6 +5,7 @@ const {
    powerMonitor,
    powerSaveBlocker,
 } = require("electron");
+const { mail_id, mail_pass } = require("./scripts/decrypt-secrets");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const path = require("path");
@@ -269,8 +270,8 @@ if (!gotTheLock) {
          const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-               user: "appautotimeclock@gmail.com", // Email address
-               pass: "qyav mlvh omoy ueqo", // App password
+               user: mail_id,
+               pass: mail_pass,
             },
          });
 
@@ -419,7 +420,7 @@ if (!gotTheLock) {
             }
          }
 
-         if (!userActive && state === "clockedIn") {
+         if (userActive == false && state === "clockedIn") {
             let presence = await getPresence(userId).catch(async (error) => {
                log.error("An error has occurred, relaunching the app...");
                relaunchApp();
