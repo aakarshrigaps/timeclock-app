@@ -420,12 +420,23 @@ if (!gotTheLock) {
          }
 
          if (!userActive && state === "clockedIn") {
-            await startBreak(userId, teamId, timeCardId).catch(
-               async (error) => {
-                  log.error("An error occurred, relaunching the app...");
-                  relaunchApp();
-               }
-            );
+            let presence = await getPresence(userId).catch(async (error) => {
+               log.error("An error has occurred, relaunching the app...");
+               relaunchApp();
+            });
+            if (
+               presence.activity !== "InACall" ||
+               presence.activity !== "InAConferenceCall" ||
+               presence.activity !== "InAMeeting" ||
+               presence.activity !== "Presenting"
+            ) {
+               await startBreak(userId, teamId, timeCardId).catch(
+                  async (error) => {
+                     log.error("An error occurred, relaunching the app...");
+                     relaunchApp();
+                  }
+               );
+            }
          } else if (userActive && state === "onBreak") {
             await endBreak(userId, teamId, timeCardId).catch(async (error) => {
                log.error("An error has occurred, relaunching the app...");
