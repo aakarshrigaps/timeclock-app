@@ -426,9 +426,9 @@ if (!gotTheLock) {
                relaunchApp();
             });
             if (
-               presence.activity !== "InACall" ||
-               presence.activity !== "InAConferenceCall" ||
-               presence.activity !== "InAMeeting" ||
+               presence.activity !== "InACall" &&
+               presence.activity !== "InAConferenceCall" &&
+               presence.activity !== "InAMeeting" &&
                presence.activity !== "Presenting"
             ) {
                await startBreak(userId, teamId, timeCardId).catch(

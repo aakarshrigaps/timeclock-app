@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.6.8] - 2024-12-03
+### 🐞 Bug fixes
+- Fixed issue with breaks starting while the user is on a call.
+
+## [2.6.7] - 2024-12-02
+### 🔧 Other Changes
+- **Improve Secret Management**: Enhanced secret management for improved security and reliability.
+
+## [2.6.6] - 2024-12-02
+### 🐞 Bug fixes
+- Fixed issue with breaks starting automatically after inactivity detection.
+
+
+## [2.6.5] - 2024-12-02
+### 🚀 Additional Enhancements
+- **Individual Break Duration**: Added a column to the SharePoint list to store the individual break duration for each user.
+
 ## [2.6.4] - 2024-11-30
 ### 🚀 Additional Enhancements
 - **Duration columns in SharePoint List**: Added columns to the SharePoint list to store the total work duration and break duration for each user.
