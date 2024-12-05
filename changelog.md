@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.6.9] - 204-12-05
+### 🔧 Other Changes
+- Changed the date comparison for SharePoint data update to consider the current date in the Indian Standard Time (IST) zone.
+
 ## [2.6.8] - 2024-12-03
 ### 🐞 Bug fixes
 - Fixed issue with breaks starting while the user is on a call.

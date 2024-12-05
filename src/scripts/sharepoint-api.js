@@ -263,10 +263,14 @@ async function sendDataToSharePointList(
    lastUpdated
 ) {
    if (latestTimeCard.clockInEvent?.dateTime) {
-      const clockInDate = new Date(latestTimeCard.clockInEvent.dateTime);
-      const today = new Date();
+      const clockInDate = new Date(
+         latestTimeCard.clockInEvent.dateTime
+      ).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
+      const today = new Date().toLocaleDateString("en-IN", {
+         timeZone: "Asia/Kolkata",
+      });
 
-      if (clockInDate.toDateString() !== today.toDateString()) {
+      if (clockInDate !== today) {
          log.info(
             "Clock-in date does not match today's date. Skipping SharePoint send."
          );
@@ -317,10 +321,14 @@ async function updateDataSharePointList(
    lastUpdated
 ) {
    if (latestTimeCard.clockInEvent?.dateTime) {
-      const clockInDate = new Date(latestTimeCard.clockInEvent.dateTime);
-      const today = new Date();
+      const clockInDate = new Date(
+         latestTimeCard.clockInEvent.dateTime
+      ).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
+      const today = new Date().toLocaleDateString("en-IN", {
+         timeZone: "Asia/Kolkata",
+      });
 
-      if (clockInDate.toDateString() !== today.toDateString()) {
+      if (clockInDate !== today) {
          log.info(
             "Clock-in date does not match today's date. Skipping SharePoint update."
          );
